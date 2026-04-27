@@ -1,0 +1,20 @@
+# ── Compiled output ──────────────────────────────────
+target/
+*.class
+*.jar
+
+# ── Secrets — NEVER commit these ─────────────────────
+# application.properties contains your API keys and DB passwords
+src/main/resources/application.properties
+
+# Keep the example file (no real secrets in it)
+!src/main/resources/application.properties.example
+
+# ── IDE files ─────────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+
+# ── OS files ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
