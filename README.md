@@ -1,215 +1,109 @@
-# Task Manager API
+# 🏋️ AI Personal Trainer App
 
-A **production-ready RESTful backend API** built with Spring Boot, PostgreSQL, Docker, and GitHub Actions CI/CD.
-
----
-
-## Architecture
-
-```
-HTTP Request
-    │
-    ▼
-TaskController         ← REST layer (routes & HTTP)
-    │
-    ▼
-TaskService            ← Business logic layer
-    │
-    ▼
-TaskRepository         ← Data access layer (Spring Data JPA)
-    │
-    ▼
-PostgreSQL Database    ← Persistence
-```
+A **full-stack, AI-powered fitness application** that acts as your personalized trainer and nutritionist. It calculates your health stats, generates custom 7-day workout and diet plans, tracks your weekly progress with interactive charts, and features a conversational AI coach that remembers your context.
 
 ---
 
-## Prerequisites
+## ✨ Features
 
-| Tool | Version | Download |
-|------|---------|----------|
-| JDK | 21+ | https://adoptium.net |
-| Maven | 3.9+ | https://maven.apache.org |
-| Docker Desktop | Latest | https://www.docker.com/products/docker-desktop |
-| Git | Latest | https://git-scm.com |
+- **Secure Authentication**: User registration and login using JWT tokens and BCrypt password hashing.
+- **Dynamic Health Profiling**: Calculates your BMI, estimated Body Fat %, and Daily Maintenance Calories (TDEE).
+- **AI Plan Generation**: Uses LLMs (Google Gemini / Groq) to instantly generate personalized diet and workout plans based on your exact body stats and goals.
+- **Progress Tracking**: Log your weekly weight, macros (protein, carbs, fat, calories), and workout completion. Visualizes your weight trend using Recharts.
+- **Interactive AI Coach**: A real-time chat interface where the AI knows your profile, your latest goal, and your conversation history to give you highly personalized fitness and nutrition advice.
+- **Responsive UI**: Beautiful, glassmorphism-inspired dark mode interface built with Next.js and custom CSS.
 
 ---
 
-## Quick Start (Docker — Recommended)
+## 🛠️ Tech Stack
 
+### Backend
+- **Framework**: Spring Boot 3.2 (Java 21)
+- **Database**: PostgreSQL 16
+- **ORM**: Hibernate / Spring Data JPA
+- **Security**: Spring Security + JWT
+- **AI Integration**: Groq API / Google Gemini API
+
+### Frontend
+- **Framework**: Next.js 14 (App Router)
+- **UI Library**: React 19
+- **Charting**: Recharts
+- **Markdown Rendering**: React Markdown
+- **Notifications**: React Hot Toast
+
+---
+
+## 🚀 Quick Start (Local Development)
+
+### Prerequisites
+- JDK 21+
+- Node.js 18+
+- PostgreSQL running locally (or via Docker)
+- A free API key from [Groq](https://console.groq.com/) or [Google Gemini](https://aistudio.google.com/)
+
+### 1. Setup the Backend
 ```bash
-# 1. Clone the repo
-git clone <your-repo-url>
-cd task-manager-api
+# Navigate to the backend directory
+cd ai-trainer
 
-# 2. Start the app + PostgreSQL
-docker-compose up --build
+# Update application.properties with your API Key
+# (Set groq.api.key or GROQ_API_KEY environment variable)
 
-# 3. Test it
-curl http://localhost:8080/tasks
-```
-
-**Swagger UI:** http://localhost:8080/swagger-ui.html
-
----
-
-## Local Development (without Docker)
-
-```bash
-# Requires: JDK 21, Maven, PostgreSQL running locally
-
-# 1. Create the database
-createdb taskdb
-
-# 2. Update application.properties with your DB credentials (or use defaults)
-# spring.datasource.url=jdbc:postgresql://localhost:5432/taskdb
-# spring.datasource.username=postgres
-# spring.datasource.password=postgres
-
-# 3. Run the app
+# Run the Spring Boot application
 mvn spring-boot:run
 ```
+*The backend will start on `http://localhost:8082`*
 
----
-
-## Run Tests
-
+### 2. Setup the Frontend
 ```bash
-# Tests use H2 in-memory database — no PostgreSQL needed!
-mvn test
-```
+# Navigate to the frontend directory
+cd ai-trainer-frontend
 
-Expected output:
+# Install dependencies
+npm install
+
+# Run the Next.js development server
+npm run dev
 ```
-Tests run: 23, Failures: 0, Errors: 0, Skipped: 0
-BUILD SUCCESS
+*The frontend will start on `http://localhost:3000`*
+
+---
+
+## 🏗️ Project Architecture
+
+```
+AI-Trainer/
+├── ai-trainer/                     ← Spring Boot Backend
+│   ├── src/main/java/.../aitrainer/
+│   │   ├── config/                 ← Security & CORS configurations
+│   │   ├── controller/             ← REST API endpoints
+│   │   ├── model/                  ← JPA Entities (User, Profile, Plan, Progress)
+│   │   ├── repository/             ← Database Access
+│   │   ├── security/               ← JWT Filtering and Auth
+│   │   └── service/                ← Business Logic & AI Integration
+│   └── src/main/resources/         ← application.properties
+│
+├── ai-trainer-frontend/            ← Next.js Frontend
+│   ├── app/                        ← Next.js App Router pages
+│   │   ├── auth/                   ← Login & Register pages
+│   │   ├── chat/                   ← AI Chatbot interface
+│   │   ├── dashboard/              ← User Dashboard
+│   │   ├── plan/                   ← Generated Plans & PDF Export
+│   │   ├── profile/                ← Health Profiling
+│   │   └── progress/               ← Check-ins & Charts
+│   ├── components/                 ← Reusable UI (Navbar, etc)
+│   ├── lib/                        ← API utilities & JWT handling
+│   └── public/                     ← Static assets
 ```
 
 ---
 
-## API Endpoints
+## 🌍 Deployment
 
-| Method | Endpoint | Description | Status |
-|--------|----------|-------------|--------|
-| `POST` | `/tasks` | Create a new task | 201 |
-| `GET` | `/tasks` | Get all tasks | 200 |
-| `GET` | `/tasks/{id}` | Get task by ID | 200 / 404 |
-| `PUT` | `/tasks/{id}` | Update task | 200 / 404 |
-| `DELETE` | `/tasks/{id}` | Delete task | 204 / 404 |
-| `PATCH` | `/tasks/{id}/complete` | Mark as DONE | 200 / 404 |
-
-### Example Requests
-
-**Create Task:**
-```bash
-curl -X POST http://localhost:8080/tasks \
-  -H "Content-Type: application/json" \
-  -d '{"title": "Finish assignment", "description": "Backend API"}'
-```
-
-**Response:**
-```json
-{
-  "id": 1,
-  "title": "Finish assignment",
-  "description": "Backend API",
-  "status": "OPEN",
-  "createdAt": "2025-01-01T10:00:00",
-  "updatedAt": "2025-01-01T10:00:00"
-}
-```
-
-**Get All Tasks:**
-```bash
-curl http://localhost:8080/tasks
-```
-
-**Mark Complete:**
-```bash
-curl -X PATCH http://localhost:8080/tasks/1/complete
-```
-
-**Delete Task:**
-```bash
-curl -X DELETE http://localhost:8080/tasks/1
-```
+This project is configured for easy deployment:
+1. **Backend**: Deploy the `ai-trainer` directory to **Railway** (alongside a Railway PostgreSQL database). Configure the `SPRING_DATASOURCE_URL`, `JWT_SECRET`, and `GROQ_API_KEY` environment variables.
+2. **Frontend**: Deploy the `ai-trainer-frontend` directory to **Vercel**. Set the `NEXT_PUBLIC_API_URL` to point to your live Railway backend URL.
 
 ---
 
-## Project Structure
-
-```
-task-manager-api/
-├── src/main/java/com/example/taskmanager/
-│   ├── TaskManagerApplication.java     ← App entry point
-│   ├── controller/
-│   │   └── TaskController.java         ← REST endpoints
-│   ├── service/
-│   │   └── TaskService.java            ← Business logic
-│   ├── repository/
-│   │   └── TaskRepository.java         ← DB access
-│   ├── model/
-│   │   └── Task.java                   ← JPA Entity
-│   ├── dto/
-│   │   ├── TaskRequest.java            ← Input DTO
-│   │   └── TaskResponse.java           ← Output DTO
-│   └── exception/
-│       ├── ResourceNotFoundException.java
-│       └── GlobalExceptionHandler.java
-├── src/test/
-│   ├── TaskServiceTest.java            ← 12 unit tests
-│   └── TaskControllerTest.java         ← 11 integration tests
-├── Dockerfile                          ← Multi-stage Docker build
-├── docker-compose.yml                  ← App + PostgreSQL
-├── .github/workflows/ci.yml            ← GitHub Actions CI
-└── pom.xml                             ← Maven dependencies
-```
-
----
-
-## CI/CD
-
-Every push to `main` triggers GitHub Actions:
-1. ✅ Run 23 automated tests
-2. ✅ Build JAR artifact
-3. ✅ Validate Docker image build
-
----
-
-## Task Status Values
-
-| Status | Meaning |
-|--------|---------|
-| `OPEN` | Task just created |
-| `IN_PROGRESS` | Work has started |
-| `DONE` | Task completed |
-
----
-
-## Error Responses
-
-All errors return structured JSON:
-
-```json
-{
-  "status": 404,
-  "error": "Not Found",
-  "message": "Task not found with id: 99",
-  "timestamp": "2025-01-01T10:00:00"
-}
-```
-
----
-
-## Tech Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Framework | Spring Boot 3.2 |
-| Language | Java 21 |
-| Database | PostgreSQL 16 |
-| ORM | Hibernate / Spring Data JPA |
-| Testing | JUnit 5 + Mockito + MockMvc |
-| Container | Docker + docker-compose |
-| CI/CD | GitHub Actions |
-| API Docs | SpringDoc OpenAPI (Swagger) |
+*Built as part of a comprehensive full-stack learning journey.*
