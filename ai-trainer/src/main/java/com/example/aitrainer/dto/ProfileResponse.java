@@ -9,9 +9,9 @@ public class ProfileResponse {
     private java.time.LocalDate dateOfBirth;
     private int age;
     private String gender;
-    private double heightCm;
-    private double weightKg;
-    private double targetWeightKg;
+    private Double heightCm;
+    private Double weightKg;
+    private Double targetWeightKg;
     private String trainingLevel;
     private String dietPreference;
     private String sports;
@@ -42,14 +42,14 @@ public class ProfileResponse {
     public String getGender() { return gender; }
     public void setGender(String gender) { this.gender = gender; }
 
-    public double getHeightCm() { return heightCm; }
-    public void setHeightCm(double heightCm) { this.heightCm = heightCm; }
+    public Double getHeightCm() { return heightCm; }
+    public void setHeightCm(Double heightCm) { this.heightCm = heightCm; }
 
-    public double getWeightKg() { return weightKg; }
-    public void setWeightKg(double weightKg) { this.weightKg = weightKg; }
+    public Double getWeightKg() { return weightKg; }
+    public void setWeightKg(Double weightKg) { this.weightKg = weightKg; }
 
-    public double getTargetWeightKg() { return targetWeightKg; }
-    public void setTargetWeightKg(double targetWeightKg) { this.targetWeightKg = targetWeightKg; }
+    public Double getTargetWeightKg() { return targetWeightKg; }
+    public void setTargetWeightKg(Double targetWeightKg) { this.targetWeightKg = targetWeightKg; }
 
     public String getTrainingLevel() { return trainingLevel; }
     public void setTrainingLevel(String trainingLevel) { this.trainingLevel = trainingLevel; }
