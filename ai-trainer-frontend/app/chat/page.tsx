@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { apiFetch } from '@/lib/api';
 import ReactMarkdown from 'react-markdown';
+import toast from 'react-hot-toast';
 
 export default function Chat() {
   const [messages, setMessages] = useState<any[]>([]);
