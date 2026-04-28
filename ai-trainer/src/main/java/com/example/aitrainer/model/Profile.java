@@ -31,7 +31,7 @@ public class Profile {
     @Column(nullable = false)
     private Double weightKg;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Double targetWeightKg;
 
     // BEGINNER, AMATEUR, INTERMEDIATE, PRO
