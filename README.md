@@ -13,6 +13,8 @@ A **full-stack, AI-powered fitness application** that acts as your personalized 
 - **Macro Calculator**: Standalone scientific calculator (Mifflin-St Jeor) that auto-syncs with your latest profile and progress data.
 - **Secure Authentication**: Flexible login using either **Username or Email** with JWT-based stateless authentication.
 - **Smart Weight Projection Engine**: Uses moving average algorithms to predict your goal achievement date based on your real-world progress and consistency.
+- **Macronutrient Targeting**: Automatically calculates optimal Protein, Carb, and Fat targets based on your specific fitness goal (Lose Weight vs. Muscle Gain).
+- **Performance Optimized**: Database-level indexing ensures instant data retrieval for tracking history and food logs.
 - **Dynamic Health Profiling**: Instant calculation of BMI, Body Fat %, and Maintenance Calories. Auto-syncs with your target weight goals.
 - **Responsive Design**: Premium dark/light mode interface with glassmorphism aesthetics, built for both desktop and mobile.
 

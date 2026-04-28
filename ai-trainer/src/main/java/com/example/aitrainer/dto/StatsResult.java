@@ -18,6 +18,11 @@ public class StatsResult {
     private double healthyWeightMin;
     private double healthyWeightMax;
 
+    private int targetProtein;
+    private int targetCarbs;
+    private int targetFat;
+    private String motivationalMessage;
+
     // Constructors
     public StatsResult() {}
 
@@ -51,4 +56,16 @@ public class StatsResult {
 
     public double getHealthyWeightMax() { return healthyWeightMax; }
     public void setHealthyWeightMax(double healthyWeightMax) { this.healthyWeightMax = healthyWeightMax; }
+
+    public int getTargetProtein() { return targetProtein; }
+    public void setTargetProtein(int targetProtein) { this.targetProtein = targetProtein; }
+
+    public int getTargetCarbs() { return targetCarbs; }
+    public void setTargetCarbs(int targetCarbs) { this.targetCarbs = targetCarbs; }
+
+    public int getTargetFat() { return targetFat; }
+    public void setTargetFat(int targetFat) { this.targetFat = targetFat; }
+
+    public String getMotivationalMessage() { return motivationalMessage; }
+    public void setMotivationalMessage(String motivationalMessage) { this.motivationalMessage = motivationalMessage; }
 }

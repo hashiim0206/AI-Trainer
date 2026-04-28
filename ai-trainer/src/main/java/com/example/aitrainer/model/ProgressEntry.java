@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "progress_entries")
+@Table(name = "progress_entries", indexes = {
+    @Index(name = "idx_progress_user", columnList = "user_id"),
+    @Index(name = "idx_progress_date", columnList = "checkinDate")
+})
 public class ProgressEntry {
 
     @Id

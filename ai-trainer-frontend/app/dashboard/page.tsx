@@ -73,6 +73,14 @@ export default function Dashboard() {
 
       {profile && (
         <div className="anim-fade-up">
+          
+          {/* Motivation Banner */}
+          <div className="card card-glow" style={{ marginBottom: '32px', background: 'var(--primary-glow)', padding: '20px', borderLeft: '5px solid var(--primary)' }}>
+             <p className="font-bold text-gradient" style={{ fontSize: '20px' }}>
+                {stats?.motivationalMessage || "Ready to crush your goals today?"}
+             </p>
+          </div>
+
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <h2 className="heading-2">Welcome back, {profile.fullName.split(' ')[0]}</h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-3)', padding: '8px 16px', borderRadius: '99px', border: '1px solid var(--border)' }}>
@@ -82,37 +90,59 @@ export default function Dashboard() {
           </div>
           
           <div className="form-row" style={{ marginBottom: '32px' }}>
-            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h3 className="heading-3 text-gradient">Your Current Goal</h3>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <p className="font-bold">{plan ? plan.goal : 'No goal set yet.'}</p>
-                  {projection && projection.weeksToGoal && (
-                    <p className="text-xs text-accent mt-1">Est. Arrival: {new Date(projection.projectedDate).toLocaleDateString()}</p>
-                  )}
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div className="text-xs text-muted">Target</div>
-                  <div className="font-bold">{profile.targetWeightKg}kg</div>
-                </div>
+            {/* Goal Card */}
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1.2 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <h3 className="heading-3 text-gradient">Current Goal</h3>
+                <div className="badge badge-accent">Target: {profile.targetWeightKg}kg</div>
               </div>
+              <p className="font-bold">{plan ? plan.goal : 'No goal set yet.'}</p>
+              
+              {projection && projection.weeksToGoal && (
+                <div style={{ background: 'var(--bg-3)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                  <div className="text-xs text-muted mb-1">Estimated Goal Arrival</div>
+                  <div className="font-bold text-accent" style={{ fontSize: '18px' }}>
+                    {new Date(projection.projectedDate).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+                  </div>
+                  <div className="text-xs text-muted mt-1">{projection.weeksToGoal} weeks remaining at current pace</div>
+                </div>
+              )}
+
               <div style={{ marginTop: 'auto' }}>
                 <Link href="/plan" className="btn btn-primary btn-sm">{plan ? 'View Plan' : 'Generate Plan'}</Link>
               </div>
             </div>
 
-            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Nutrition Card */}
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <h3 className="heading-3 text-gradient">Health Stats</h3>
+                <h3 className="heading-3 text-gradient">Daily Targets</h3>
                 <div className="text-xs text-muted">Ideal: {stats?.healthyWeightMin}-{stats?.healthyWeightMax}kg</div>
               </div>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <span className="badge badge-accent">Weight: {profile.weightKg}kg</span>
-                <span className="badge badge-primary">BMI: {stats?.bmi.toFixed(1)}</span>
-                <span className="badge badge-amber">{Math.round(stats?.maintenanceCalories)} kcal/day</span>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', background: 'var(--bg-3)', borderRadius: '8px' }}>
+                  <span className="text-sm font-bold">Calories</span>
+                  <span className="text-sm text-accent">{Math.round(stats?.maintenanceCalories)} kcal</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                   <div style={{ textAlign: 'center', background: 'var(--bg-3)', padding: '8px', borderRadius: '8px' }}>
+                      <div className="text-xs text-muted">Protein</div>
+                      <div className="font-bold text-sm">{stats?.targetProtein}g</div>
+                   </div>
+                   <div style={{ textAlign: 'center', background: 'var(--bg-3)', padding: '8px', borderRadius: '8px' }}>
+                      <div className="text-xs text-muted">Carbs</div>
+                      <div className="font-bold text-sm">{stats?.targetCarbs}g</div>
+                   </div>
+                   <div style={{ textAlign: 'center', background: 'var(--bg-3)', padding: '8px', borderRadius: '8px' }}>
+                      <div className="text-xs text-muted">Fat</div>
+                      <div className="font-bold text-sm">{stats?.targetFat}g</div>
+                   </div>
+                </div>
               </div>
+
               <div style={{ marginTop: 'auto' }}>
-                <Link href="/profile" className="btn btn-ghost btn-sm">Update Stats</Link>
+                <Link href="/profile" className="btn btn-ghost btn-sm">Adjust Profile</Link>
               </div>
             </div>
           </div>

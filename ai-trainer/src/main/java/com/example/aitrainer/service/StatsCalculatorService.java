@@ -35,7 +35,48 @@ public class StatsCalculatorService {
         // Advanced Logic: Health Status Summary (BMI vs Body Fat)
         result.setHealthStatusSummary(calculateHealthSummary(bmi, bodyFatRange[0], profile.getGender()));
 
+        // Calculate Macronutrient Targets
+        calculateMacros(result, tdee, profile.getWeightKg() > profile.getTargetWeightKg() ? "LOSE_WEIGHT" : "GAIN_MUSCLE");
+
+        // Motivation Engine
+        result.setMotivationalMessage(generateMotivation(result, profile.getFullName().split(" ")[0]));
+
         return result;
+    }
+
+    private void calculateMacros(StatsResult res, double tdee, String goal) {
+        double proteinP, carbP, fatP;
+
+        if ("LOSE_WEIGHT".equals(goal)) {
+            proteinP = 0.35; // 35% Protein (Keep muscle)
+            carbP = 0.35;    // 35% Carbs
+            fatP = 0.30;     // 30% Fat
+            tdee -= 500;     // Caloric deficit
+        } else if ("GAIN_MUSCLE".equals(goal)) {
+            proteinP = 0.25; // 25% Protein
+            carbP = 0.55;    // 55% Carbs (Fuel workouts)
+            fatP = 0.20;     // 20% Fat
+            tdee += 300;     // Caloric surplus
+        } else {
+            proteinP = 0.30;
+            carbP = 0.40;
+            fatP = 0.30;
+        }
+
+        // 1g Protein = 4 kcal, 1g Carb = 4 kcal, 1g Fat = 9 kcal
+        res.setTargetProtein((int) ((tdee * proteinP) / 4));
+        res.setTargetCarbs((int) ((tdee * carbP) / 4));
+        res.setTargetFat((int) ((tdee * fatP) / 9));
+    }
+
+    private String generateMotivation(StatsResult stats, String name) {
+        if (stats.getBmi() > 30) {
+            return String.format("Big moves today, %s! Every choice you make is a vote for the new version of yourself.", name);
+        }
+        if ("Athlete".equals(stats.getBodyFatCategory())) {
+            return String.format("Elite work, %s. You're in the top 1%% of fitness. Keep pushing the boundaries!", name);
+        }
+        return String.format("Consistency is your superpower, %s. Keep showing up and the results will keep coming.", name);
     }
 
     private String calculateHealthSummary(double bmi, double bodyFat, String gender) {
