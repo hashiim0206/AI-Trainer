@@ -14,6 +14,9 @@ public class StatsResult {
     private double maxBodyFatPercent;
     private String bodyFatCategory; // "Athlete", "Fitness", "Average" etc.
 
+    private double healthyWeightMin;
+    private double healthyWeightMax;
+
     // Constructors
     public StatsResult() {}
 
@@ -38,4 +41,10 @@ public class StatsResult {
 
     public String getBodyFatCategory() { return bodyFatCategory; }
     public void setBodyFatCategory(String bodyFatCategory) { this.bodyFatCategory = bodyFatCategory; }
+
+    public double getHealthyWeightMin() { return healthyWeightMin; }
+    public void setHealthyWeightMin(double healthyWeightMin) { this.healthyWeightMin = healthyWeightMin; }
+
+    public double getHealthyWeightMax() { return healthyWeightMax; }
+    public void setHealthyWeightMax(double healthyWeightMax) { this.healthyWeightMax = healthyWeightMax; }
 }

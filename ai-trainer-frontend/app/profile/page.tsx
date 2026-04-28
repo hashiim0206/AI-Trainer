@@ -199,12 +199,19 @@ export default function Profile() {
           {stats && (
             <>
               <h3 className="heading-3" style={{ marginBottom: '16px', marginTop: '32px' }}>Your Health Stats</h3>
-              <div className="form-row-3">
-                <div className="stat-card">
-                  <span className="stat-label">BMI</span>
-                  <span className="stat-value">{stats.bmi.toFixed(1)}</span>
-                  <span className="stat-sub">{stats.bmiCategory}</span>
+              <div className="form-row" style={{ marginBottom: '16px' }}>
+                <div className="stat-card" style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span className="stat-label">BMI & Healthy Range</span>
+                    <span className="badge badge-primary">{stats.bmiCategory}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginTop: '8px' }}>
+                    <span className="stat-value">{stats.bmi.toFixed(1)}</span>
+                    <span className="text-muted text-sm">Ideal Weight: <b>{stats.healthyWeightMin} - {stats.healthyWeightMax} kg</b></span>
+                  </div>
                 </div>
+              </div>
+              <div className="form-row-3">
                 <div className="stat-card">
                   <span className="stat-label">Est. Body Fat</span>
                   <span className="stat-value">{stats.minBodyFatPercent.toFixed(1)}% - {stats.maxBodyFatPercent.toFixed(1)}%</span>
@@ -214,6 +221,11 @@ export default function Profile() {
                   <span className="stat-label">Daily Maintenance</span>
                   <span className="stat-value">{Math.round(stats.maintenanceCalories)}</span>
                   <span className="stat-sub">kcal / day</span>
+                </div>
+                <div className="stat-card">
+                   <span className="stat-label">Weight to Goal</span>
+                   <span className="stat-value">{Math.abs(profile.weightKg - profile.targetWeightKg).toFixed(1)} kg</span>
+                   <span className="stat-sub">{profile.weightKg > profile.targetWeightKg ? 'Remaining to lose' : 'Remaining to gain'}</span>
                 </div>
               </div>
             </>

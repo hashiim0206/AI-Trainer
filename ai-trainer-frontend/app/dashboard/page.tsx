@@ -8,6 +8,7 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
   const [plan, setPlan] = useState<any>(null);
+  const [projection, setProjection] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,7 +24,6 @@ export default function Dashboard() {
     } else if (Notification.permission === 'granted') {
       const lastNotified = localStorage.getItem('lastNotified');
       const now = new Date().getTime();
-      // Notify if 24 hours have passed (86400000 ms)
       if (!lastNotified || now - Number(lastNotified) > 86400000) {
         new Notification('AI Trainer Reminder', {
           body: 'Don\'t forget to stay hydrated and log your meals today!',
@@ -36,18 +36,18 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const [profileData, planData] = await Promise.all([
+      const [profileData, planData, projectionData] = await Promise.all([
         apiFetch('/profile/me').catch(() => null),
-        apiFetch('/plan/my-plan').catch(() => null)
+        apiFetch('/plan/my-plan').catch(() => null),
+        apiFetch('/progress/projection').catch(() => null)
       ]);
       
       if (profileData) {
         setProfile(profileData);
         setStats(profileData.stats);
       }
-      if (planData) {
-        setPlan(planData);
-      }
+      if (planData) setPlan(planData);
+      if (projectionData) setProjection(projectionData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -84,14 +84,28 @@ export default function Dashboard() {
           <div className="form-row" style={{ marginBottom: '32px' }}>
             <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h3 className="heading-3 text-gradient">Your Current Goal</h3>
-              <p className="text-muted text-sm">{plan ? plan.goal : 'No goal set yet.'}</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <p className="font-bold">{plan ? plan.goal : 'No goal set yet.'}</p>
+                  {projection && projection.weeksToGoal && (
+                    <p className="text-xs text-accent mt-1">Est. Arrival: {new Date(projection.projectedDate).toLocaleDateString()}</p>
+                  )}
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div className="text-xs text-muted">Target</div>
+                  <div className="font-bold">{profile.targetWeightKg}kg</div>
+                </div>
+              </div>
               <div style={{ marginTop: 'auto' }}>
                 <Link href="/plan" className="btn btn-primary btn-sm">{plan ? 'View Plan' : 'Generate Plan'}</Link>
               </div>
             </div>
 
             <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h3 className="heading-3 text-gradient">Health Stats</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <h3 className="heading-3 text-gradient">Health Stats</h3>
+                <div className="text-xs text-muted">Ideal: {stats?.healthyWeightMin}-{stats?.healthyWeightMax}kg</div>
+              </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <span className="badge badge-accent">Weight: {profile.weightKg}kg</span>
                 <span className="badge badge-primary">BMI: {stats?.bmi.toFixed(1)}</span>

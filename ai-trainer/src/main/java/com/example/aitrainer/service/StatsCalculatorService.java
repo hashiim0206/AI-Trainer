@@ -27,6 +27,11 @@ public class StatsCalculatorService {
         result.setMaxBodyFatPercent(round(bodyFatRange[1], 1));
         result.setBodyFatCategory(getBodyFatCategory(bodyFatRange[0], profile.getGender()));
 
+        // Healthy weight range based on BMI 18.5 to 25
+        double heightM = profile.getHeightCm() / 100.0;
+        result.setHealthyWeightMin(round(18.5 * heightM * heightM, 1));
+        result.setHealthyWeightMax(round(25.0 * heightM * heightM, 1));
+
         return result;
     }
 
