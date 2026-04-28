@@ -89,7 +89,7 @@ export default function Dashboard() {
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <span className="badge badge-accent">Weight: {profile.weightKg}kg</span>
                 <span className="badge badge-primary">BMI: {stats?.bmi.toFixed(1)}</span>
-                <span className="badge badge-amber">{stats?.maintenanceCalories} kcal/day</span>
+                <span className="badge badge-amber">{Math.round(stats?.maintenanceCalories)} kcal/day</span>
               </div>
               <div style={{ marginTop: 'auto' }}>
                 <Link href="/profile" className="btn btn-ghost btn-sm">Update Stats</Link>
