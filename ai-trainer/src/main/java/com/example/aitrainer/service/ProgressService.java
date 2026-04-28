@@ -57,7 +57,7 @@ public class ProgressService {
         double startingWeight = profile.getWeightKg();
 
         // ── Get previous check-in for weekly comparison ───────────────────────
-        Optional<ProgressEntry> previousEntry = progressRepository.findFirstByUserOrderByCheckinDateDesc(user);
+        Optional<ProgressEntry> previousEntry = progressRepository.findFirstByUserOrderByCheckinDateDescIdDesc(user);
         long weekNumber = progressRepository.countByUser(user) + 1;
 
         // ── Calculate the deltas ──────────────────────────────────────────────
