@@ -13,6 +13,7 @@ public class StatsResult {
     private double minBodyFatPercent;
     private double maxBodyFatPercent;
     private String bodyFatCategory; // "Athlete", "Fitness", "Average" etc.
+    private String healthStatusSummary; // Nuanced assessment (BMI vs Body Fat)
 
     private double healthyWeightMin;
     private double healthyWeightMax;
@@ -41,6 +42,9 @@ public class StatsResult {
 
     public String getBodyFatCategory() { return bodyFatCategory; }
     public void setBodyFatCategory(String bodyFatCategory) { this.bodyFatCategory = bodyFatCategory; }
+
+    public String getHealthStatusSummary() { return healthStatusSummary; }
+    public void setHealthStatusSummary(String healthStatusSummary) { this.healthStatusSummary = healthStatusSummary; }
 
     public double getHealthyWeightMin() { return healthyWeightMin; }
     public void setHealthyWeightMin(double healthyWeightMin) { this.healthyWeightMin = healthyWeightMin; }

@@ -140,9 +140,9 @@ export default function Profile() {
               <label className="form-label">Training Level</label>
               <select className="form-input" value={formData.trainingLevel} onChange={e => setFormData({...formData, trainingLevel: e.target.value})}>
                 <option value="BEGINNER">Beginner</option>
+                <option value="AMATEUR">Amateur</option>
                 <option value="INTERMEDIATE">Intermediate</option>
-                <option value="ADVANCED">Advanced</option>
-                <option value="ATHLETE">Athlete</option>
+                <option value="PRO">Pro / Athlete</option>
               </select>
             </div>
             <div className="form-group">
@@ -198,6 +198,14 @@ export default function Profile() {
 
           {stats && (
             <>
+              <div className="card card-glow" style={{ marginBottom: '24px', background: 'var(--bg-3)', borderColor: 'var(--primary-lt)' }}>
+                <h3 className="heading-3" style={{ marginBottom: '8px' }}>Overall Health Summary 🩺</h3>
+                <p className="font-bold text-gradient" style={{ fontSize: '18px' }}>{stats.healthStatusSummary}</p>
+                <p className="text-xs text-muted mt-2" style={{ fontStyle: 'italic' }}>
+                  * This assessment uses a weighted comparison between your BMI and Estimated Body Fat % to account for muscle mass.
+                </p>
+              </div>
+
               <h3 className="heading-3" style={{ marginBottom: '16px', marginTop: '32px' }}>Your Health Stats</h3>
               <div className="form-row" style={{ marginBottom: '16px' }}>
                 <div className="stat-card" style={{ flex: 1 }}>

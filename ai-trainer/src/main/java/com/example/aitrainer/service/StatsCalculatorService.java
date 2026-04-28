@@ -32,7 +32,33 @@ public class StatsCalculatorService {
         result.setHealthyWeightMin(round(18.5 * heightM * heightM, 1));
         result.setHealthyWeightMax(round(25.0 * heightM * heightM, 1));
 
+        // Advanced Logic: Health Status Summary (BMI vs Body Fat)
+        result.setHealthStatusSummary(calculateHealthSummary(bmi, bodyFatRange[0], profile.getGender()));
+
         return result;
+    }
+
+    private String calculateHealthSummary(double bmi, double bodyFat, String gender) {
+        boolean isMale = "MALE".equalsIgnoreCase(gender);
+        boolean lowBF = isMale ? bodyFat < 15 : bodyFat < 22;
+        boolean highBF = isMale ? bodyFat > 25 : bodyFat > 32;
+
+        if (bmi >= 25 && lowBF) {
+            return "Athletic / High Muscle Mass (BMI is high due to muscle, not fat).";
+        }
+        if (bmi < 25 && highBF) {
+            return "Skinny Fat (Normal weight but high body fat percentage).";
+        }
+        if (bmi >= 30 && highBF) {
+            return "Obese (High BMI and High Body Fat).";
+        }
+        if (bmi >= 25 && highBF) {
+            return "Overweight (Elevated BMI and Body Fat).";
+        }
+        if (bmi < 18.5) {
+            return "Underweight.";
+        }
+        return "Healthy / Balanced Composition.";
     }
 
     // ── Formula 1: BMI ────────────────────────────────────────────────────────
