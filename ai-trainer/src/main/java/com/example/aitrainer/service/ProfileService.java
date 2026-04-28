@@ -19,13 +19,16 @@ public class ProfileService {
     private final ProfileRepository profileRepository;
     private final UserRepository userRepository;
     private final StatsCalculatorService statsCalculator;
+    private final com.example.aitrainer.repository.ProgressRepository progressRepository;
 
     public ProfileService(ProfileRepository profileRepository,
                           UserRepository userRepository,
-                          StatsCalculatorService statsCalculator) {
+                          StatsCalculatorService statsCalculator,
+                          com.example.aitrainer.repository.ProgressRepository progressRepository) {
         this.profileRepository = profileRepository;
         this.userRepository = userRepository;
         this.statsCalculator = statsCalculator;
+        this.progressRepository = progressRepository;
     }
 
     // Get the currently logged-in user from their JWT token
@@ -70,7 +73,12 @@ public class ProfileService {
 
     // Build the response object: combine profile data + calculated stats
     private ProfileResponse buildResponse(User user, Profile profile) {
-        StatsResult stats = statsCalculator.calculate(profile);
+        // Find latest check-in weight to use as the "Current Weight" for stats
+        Double latestWeight = progressRepository.findFirstByUserOrderByCheckinDateDesc(user)
+                .map(com.example.aitrainer.model.ProgressEntry::getWeightKg)
+                .orElse(profile.getWeightKg());
+
+        StatsResult stats = statsCalculator.calculate(profile, latestWeight);
 
         ProfileResponse response = new ProfileResponse();
         response.setUsername(user.getUsername());
@@ -79,7 +87,7 @@ public class ProfileService {
         response.setAge(stats.getAge());
         response.setGender(profile.getGender());
         response.setHeightCm(profile.getHeightCm());
-        response.setWeightKg(profile.getWeightKg());
+        response.setWeightKg(latestWeight); // Use synced weight here too
         response.setTargetWeightKg(profile.getTargetWeightKg());
         response.setTrainingLevel(profile.getTrainingLevel());
         response.setDietPreference(profile.getDietPreference());

@@ -10,11 +10,13 @@ import java.time.Period;
 @Service
 public class StatsCalculatorService {
 
-    public StatsResult calculate(Profile profile) {
+    public StatsResult calculate(Profile profile, Double latestWeight) {
         int age = Period.between(profile.getDateOfBirth(), LocalDate.now()).getYears();
 
-        double bmi = calculateBMI(profile.getWeightKg(), profile.getHeightCm());
-        double bmr = calculateBMR(profile.getWeightKg(), profile.getHeightCm(), age, profile.getGender());
+        double weightToUse = latestWeight != null ? latestWeight : profile.getWeightKg();
+
+        double bmi = calculateBMI(weightToUse, profile.getHeightCm());
+        double bmr = calculateBMR(weightToUse, profile.getHeightCm(), age, profile.getGender());
         double tdee = calculateTDEE(bmr, profile.getTrainingLevel());
         double[] bodyFatRange = estimateBodyFatRange(bmi, age, profile.getGender());
 
@@ -36,7 +38,7 @@ public class StatsCalculatorService {
         result.setHealthStatusSummary(calculateHealthSummary(bmi, bodyFatRange[0], profile.getGender()));
 
         // Calculate Macronutrient Targets
-        calculateMacros(result, tdee, profile.getWeightKg() > profile.getTargetWeightKg() ? "LOSE_WEIGHT" : "GAIN_MUSCLE");
+        calculateMacros(result, tdee, weightToUse > profile.getTargetWeightKg() ? "LOSE_WEIGHT" : "GAIN_MUSCLE");
 
         // Motivation Engine
         result.setMotivationalMessage(generateMotivation(result, profile.getFullName().split(" ")[0]));
