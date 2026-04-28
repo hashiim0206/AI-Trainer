@@ -8,6 +8,7 @@ import com.example.aitrainer.model.Profile;
 import com.example.aitrainer.model.User;
 import com.example.aitrainer.repository.PlanRepository;
 import com.example.aitrainer.repository.ProfileRepository;
+import com.example.aitrainer.repository.ProgressRepository;
 import com.example.aitrainer.repository.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -20,17 +21,20 @@ public class PlanService {
     private final PlanRepository planRepository;
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
+    private final ProgressRepository progressRepository;
     private final StatsCalculatorService statsCalculator;
     private final GeminiService geminiService;
 
     public PlanService(PlanRepository planRepository,
                        UserRepository userRepository,
                        ProfileRepository profileRepository,
+                       ProgressRepository progressRepository,
                        StatsCalculatorService statsCalculator,
                        GeminiService geminiService) {
         this.planRepository = planRepository;
         this.userRepository = userRepository;
         this.profileRepository = profileRepository;
+        this.progressRepository = progressRepository;
         this.statsCalculator = statsCalculator;
         this.geminiService = geminiService;
     }
@@ -48,14 +52,19 @@ public class PlanService {
         Profile profile = profileRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Please complete your profile before generating a plan."));
 
+        // Find latest check-in weight to use as the "Current Weight" for stats
+        Double latestWeight = progressRepository.findFirstByUserOrderByCheckinDateDescIdDesc(user)
+                .map(com.example.aitrainer.model.ProgressEntry::getWeightKg)
+                .orElse(profile.getWeightKg());
+
         // Calculate their current stats
-        StatsResult stats = statsCalculator.calculate(profile);
+        StatsResult stats = statsCalculator.calculate(profile, latestWeight);
 
 
         // ── Call AI once with a combined prompt ───────────────────────────────
         // Sending 3 separate calls hit the free-tier token/minute limit.
         // One combined call is faster, cheaper, and gives the AI full context.
-        String combinedPrompt = buildCombinedPrompt(profile, stats, goalRequest.getGoal());
+        String combinedPrompt = buildCombinedPrompt(profile, stats, goalRequest.getGoal(), latestWeight);
         String aiResponse = geminiService.generate(combinedPrompt);
 
         // Parse the three sections out of the single response
@@ -103,14 +112,14 @@ public class PlanService {
     // ── Single Combined Prompt Builder ────────────────────────────────────────
     // One call = faster, cheaper, stays within free-tier token limits
     // The AI sees full context when writing all three sections
-    private String buildCombinedPrompt(Profile profile, StatsResult stats, String goal) {
+    private String buildCombinedPrompt(Profile profile, StatsResult stats, String goal, Double currentWeight) {
         String sports = profile.getSports() != null ? profile.getSports() : "General fitness";
         return """
                 You are an expert personal trainer and nutritionist. Generate a complete personalised plan.
 
                 USER PROFILE:
                 - Name: %s | Age: %d | Gender: %s
-                - Height: %.0fcm | Weight: %.0fkg | BMI: %.1f (%s)
+                - Height: %.0fcm | Weight: %.1fkg | BMI: %.1f (%s)
                 - Maintenance Calories: %.0f kcal/day
                 - Estimated Body Fat: %.1f%%-%.1f%% (%s)
                 - Training Level: %s | Diet: %s | Sports: %s | Country: %s
@@ -135,7 +144,7 @@ public class PlanService {
                 End with one powerful sentence they will remember.
                 """.formatted(
                 profile.getFullName(), stats.getAge(), profile.getGender(),
-                profile.getHeightCm(), profile.getWeightKg(), stats.getBmi(), stats.getBmiCategory(),
+                profile.getHeightCm(), currentWeight, stats.getBmi(), stats.getBmiCategory(),
                 stats.getMaintenanceCalories(),
                 stats.getMinBodyFatPercent(), stats.getMaxBodyFatPercent(), stats.getBodyFatCategory(),
                 profile.getTrainingLevel(), profile.getDietPreference(), sports, profile.getCountry(), goal,
