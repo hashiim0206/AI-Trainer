@@ -48,6 +48,8 @@ export default function Navbar() {
               <Link href="/dashboard" style={{ color: pathname === '/dashboard' ? 'var(--primary-lt)' : 'var(--text-2)', transition: 'color var(--transition)' }}>Dashboard</Link>
               <Link href="/chat" style={{ color: pathname === '/chat' ? 'var(--primary-lt)' : 'var(--text-2)', transition: 'color var(--transition)' }}>Coach Chat</Link>
               <Link href="/progress" style={{ color: pathname === '/progress' ? 'var(--primary-lt)' : 'var(--text-2)', transition: 'color var(--transition)' }}>Progress</Link>
+              <Link href="/plan" style={{ color: pathname === '/plan' ? 'var(--primary-lt)' : 'var(--text-2)', transition: 'color var(--transition)' }}>Plan</Link>
+              <Link href="/calculator" style={{ color: pathname === '/calculator' ? 'var(--primary-lt)' : 'var(--text-2)', transition: 'color var(--transition)' }}>Calculator</Link>
               <Link href="/profile" style={{ color: pathname === '/profile' ? 'var(--primary-lt)' : 'var(--text-2)', transition: 'color var(--transition)' }}>Profile</Link>
               <Link href="/settings" style={{ color: pathname === '/settings' ? 'var(--primary-lt)' : 'var(--text-2)', transition: 'color var(--transition)' }}>Settings</Link>
               <button
@@ -67,6 +69,7 @@ export default function Navbar() {
             </>
           ) : (
             <>
+              <Link href="/calculator" style={{ color: pathname === '/calculator' ? 'var(--primary-lt)' : 'var(--text-2)', transition: 'color var(--transition)' }}>Calculator</Link>
               <button
                 onClick={toggleTheme}
                 title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}

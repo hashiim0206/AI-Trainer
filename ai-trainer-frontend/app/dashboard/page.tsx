@@ -73,7 +73,13 @@ export default function Dashboard() {
 
       {profile && (
         <div className="anim-fade-up">
-          <h2 className="heading-2" style={{ marginBottom: '16px' }}>Welcome back, {profile.fullName.split(' ')[0]}</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 className="heading-2">Welcome back, {profile.fullName.split(' ')[0]}</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-3)', padding: '8px 16px', borderRadius: '99px', border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: '20px' }}>🔥</span>
+              <span className="font-bold">{profile.currentStreak || 1} Day Streak</span>
+            </div>
+          </div>
           
           <div className="form-row" style={{ marginBottom: '32px' }}>
             <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

@@ -40,6 +40,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     // Token expired or invalid
     removeToken();
     if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
+      alert("Your session has expired. Please log in again.");
       window.location.href = '/auth/login';
     }
   }

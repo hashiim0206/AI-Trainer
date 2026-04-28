@@ -22,6 +22,12 @@ public class User {
     @Column(nullable = false)
     private String role;
 
+    @Column(name = "current_streak")
+    private Integer currentStreak = 0;
+
+    @Column(name = "last_login_date")
+    private java.time.LocalDate lastLoginDate;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Profile profile;
 
@@ -59,4 +65,10 @@ public class User {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public Integer getCurrentStreak() { return currentStreak; }
+    public void setCurrentStreak(Integer currentStreak) { this.currentStreak = currentStreak; }
+
+    public java.time.LocalDate getLastLoginDate() { return lastLoginDate; }
+    public void setLastLoginDate(java.time.LocalDate lastLoginDate) { this.lastLoginDate = lastLoginDate; }
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import WorkoutTimer from "@/components/WorkoutTimer";
 import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
@@ -20,6 +21,7 @@ export default function RootLayout({
           <Navbar />
           <main style={{ flex: 1 }}>
             {children}
+            <WorkoutTimer />
           </main>
         </div>
         <Toaster 

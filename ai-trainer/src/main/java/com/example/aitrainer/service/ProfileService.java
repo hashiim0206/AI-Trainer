@@ -84,6 +84,7 @@ public class ProfileService {
         response.setSports(profile.getSports());
         response.setCountry(profile.getCountry());
         response.setStats(stats);
+        response.setCurrentStreak(user.getCurrentStreak() == null ? 0 : user.getCurrentStreak());
 
         return response;
     }

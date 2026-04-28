@@ -48,6 +48,18 @@ public class AuthService {
             throw new RuntimeException("Error: Invalid username/email or password!");
         }
 
+        // Streak Tracking Logic
+        java.time.LocalDate today = java.time.LocalDate.now();
+        if (user.getLastLoginDate() == null || user.getLastLoginDate().isBefore(today.minusDays(1))) {
+            user.setCurrentStreak(1);
+        } else if (user.getLastLoginDate().equals(today.minusDays(1))) {
+            user.setCurrentStreak((user.getCurrentStreak() == null ? 0 : user.getCurrentStreak()) + 1);
+        }
+        // If they already logged in today, streak remains the same
+        
+        user.setLastLoginDate(today);
+        userRepository.save(user);
+
         return jwtUtils.generateToken(user.getUsername());
     }
 }

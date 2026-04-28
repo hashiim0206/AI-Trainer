@@ -18,6 +18,9 @@ public class ProfileResponse {
 
     // Their health stats (calculated by us)
     private StatsResult stats;
+    
+    // Login Streak
+    private Integer currentStreak;
 
     // Constructors
     public ProfileResponse() {}
@@ -58,4 +61,7 @@ public class ProfileResponse {
 
     public StatsResult getStats() { return stats; }
     public void setStats(StatsResult stats) { this.stats = stats; }
+
+    public Integer getCurrentStreak() { return currentStreak; }
+    public void setCurrentStreak(Integer currentStreak) { this.currentStreak = currentStreak; }
 }
