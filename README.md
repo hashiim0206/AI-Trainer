@@ -12,8 +12,8 @@ A **full-stack, AI-powered fitness application** that acts as your personalized 
 - **Workout Rest Timer**: A global, floating countdown timer with audio/visual notifications to help you time your rest periods between sets.
 - **Macro Calculator**: Standalone scientific calculator (Mifflin-St Jeor) that auto-syncs with your latest profile and progress data.
 - **Secure Authentication**: Flexible login using either **Username or Email** with JWT-based stateless authentication.
-- **Progress Tracking**: Log weekly weight and macro intake. Visualizes trends using **Recharts** with interactive tooltips.
-- **Dynamic Health Profiling**: Instant calculation of BMI, Body Fat %, and Maintenance Calories.
+- **Smart Weight Projection Engine**: Uses moving average algorithms to predict your goal achievement date based on your real-world progress and consistency.
+- **Dynamic Health Profiling**: Instant calculation of BMI, Body Fat %, and Maintenance Calories. Auto-syncs with your target weight goals.
 - **Responsive Design**: Premium dark/light mode interface with glassmorphism aesthetics, built for both desktop and mobile.
 
 ---
