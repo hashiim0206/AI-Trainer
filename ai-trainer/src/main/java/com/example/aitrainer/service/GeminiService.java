@@ -116,4 +116,12 @@ public class GeminiService {
         Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
         return (String) message.get("content");
     }
+
+    public String analyzeFood(String foodDescription) {
+        String prompt = "Analyze the following food description and return ONLY a JSON object with estimated calories, protein, carbs, and fat. " +
+                "Do NOT include any text before or after the JSON. If multiple items are listed, provide the sum. " +
+                "Format: {\"calories\": 0, \"protein\": 0, \"carbs\": 0, \"fat\": 0}\n\n" +
+                "Food: " + foodDescription;
+        return generate(prompt);
+    }
 }

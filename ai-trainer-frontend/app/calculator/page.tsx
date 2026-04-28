@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { apiFetch, getToken } from '@/lib/api';
 
 export default function CalorieCalculator() {
   const [formData, setFormData] = useState({
@@ -11,6 +12,22 @@ export default function CalorieCalculator() {
     activityLevel: '1.2',
     goal: 'MAINTAIN'
   });
+
+  useEffect(() => {
+    if (getToken()) {
+      apiFetch('/profile/me').then(profile => {
+        if (profile) {
+          setFormData(prev => ({
+            ...prev,
+            age: profile.age.toString(),
+            gender: profile.gender,
+            weight: profile.weightKg.toString(),
+            height: profile.heightCm.toString()
+          }));
+        }
+      }).catch(err => console.error("Profile load failed", err));
+    }
+  }, []);
 
   const [results, setResults] = useState<{
     bmr: number;
