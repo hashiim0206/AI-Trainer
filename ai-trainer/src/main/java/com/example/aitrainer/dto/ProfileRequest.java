@@ -23,6 +23,9 @@ public class ProfileRequest {
     @NotNull @Positive(message = "Weight must be positive")
     private Double weightKg;
 
+    @NotNull @Positive(message = "Target weight must be positive")
+    private Double targetWeightKg;
+
     @NotBlank(message = "Training level required (BEGINNER, AMATEUR, INTERMEDIATE, PRO)")
     private String trainingLevel;
 
@@ -49,6 +52,9 @@ public class ProfileRequest {
 
     public Double getWeightKg() { return weightKg; }
     public void setWeightKg(Double weightKg) { this.weightKg = weightKg; }
+
+    public Double getTargetWeightKg() { return targetWeightKg; }
+    public void setTargetWeightKg(Double targetWeightKg) { this.targetWeightKg = targetWeightKg; }
 
     public String getTrainingLevel() { return trainingLevel; }
     public void setTrainingLevel(String trainingLevel) { this.trainingLevel = trainingLevel; }

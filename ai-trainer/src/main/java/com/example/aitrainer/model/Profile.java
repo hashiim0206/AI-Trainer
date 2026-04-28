@@ -31,6 +31,9 @@ public class Profile {
     @Column(nullable = false)
     private Double weightKg;
 
+    @Column(nullable = false)
+    private Double targetWeightKg;
+
     // BEGINNER, AMATEUR, INTERMEDIATE, PRO
     @Column(nullable = false)
     private String trainingLevel;
@@ -48,7 +51,7 @@ public class Profile {
     public Profile() {}
 
     public Profile(User user, String fullName, LocalDate dateOfBirth, String gender,
-                   Double heightCm, Double weightKg, String trainingLevel,
+                   Double heightCm, Double weightKg, Double targetWeightKg, String trainingLevel,
                    String dietPreference, String sports, String country) {
         this.user = user;
         this.fullName = fullName;
@@ -56,6 +59,7 @@ public class Profile {
         this.gender = gender;
         this.heightCm = heightCm;
         this.weightKg = weightKg;
+        this.targetWeightKg = targetWeightKg;
         this.trainingLevel = trainingLevel;
         this.dietPreference = dietPreference;
         this.sports = sports;
@@ -82,6 +86,9 @@ public class Profile {
 
     public Double getWeightKg() { return weightKg; }
     public void setWeightKg(Double weightKg) { this.weightKg = weightKg; }
+
+    public Double getTargetWeightKg() { return targetWeightKg; }
+    public void setTargetWeightKg(Double targetWeightKg) { this.targetWeightKg = targetWeightKg; }
 
     public String getTrainingLevel() { return trainingLevel; }
     public void setTrainingLevel(String trainingLevel) { this.trainingLevel = trainingLevel; }

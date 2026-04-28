@@ -49,6 +49,7 @@ public class ProfileService {
         profile.setGender(request.getGender().toUpperCase());
         profile.setHeightCm(request.getHeightCm());
         profile.setWeightKg(request.getWeightKg());
+        profile.setTargetWeightKg(request.getTargetWeightKg());
         profile.setTrainingLevel(request.getTrainingLevel().toUpperCase());
         profile.setDietPreference(request.getDietPreference().toUpperCase());
         profile.setSports(request.getSports());
@@ -79,6 +80,7 @@ public class ProfileService {
         response.setGender(profile.getGender());
         response.setHeightCm(profile.getHeightCm());
         response.setWeightKg(profile.getWeightKg());
+        response.setTargetWeightKg(profile.getTargetWeightKg());
         response.setTrainingLevel(profile.getTrainingLevel());
         response.setDietPreference(profile.getDietPreference());
         response.setSports(profile.getSports());

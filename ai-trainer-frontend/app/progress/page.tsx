@@ -9,6 +9,7 @@ export default function Progress() {
   const [activeTab, setActiveTab] = useState<'weekly' | 'daily'>('weekly');
   const [history, setHistory] = useState<any[]>([]);
   const [dailyLogs, setDailyLogs] = useState<any[]>([]);
+  const [projection, setProjection] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [latestResponse, setLatestResponse] = useState<any>(null);
@@ -29,6 +30,7 @@ export default function Progress() {
   useEffect(() => {
     fetchHistory();
     fetchDailyLogs();
+    fetchProjection();
   }, []);
 
   const fetchHistory = async () => {
@@ -47,6 +49,13 @@ export default function Progress() {
     } catch (err) { console.error(err); }
   };
 
+  const fetchProjection = async () => {
+    try {
+      const data = await apiFetch('/progress/projection');
+      setProjection(data);
+    } catch (err) { console.error(err); }
+  };
+
   const handleWeeklySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -54,7 +63,8 @@ export default function Progress() {
       const payload: any = {
         weightKg: Number(weeklyData.weightKg),
         bodyFatPercent: weeklyData.bodyFatPercent ? Number(weeklyData.bodyFatPercent) : null,
-        notes: weeklyData.notes
+        notes: weeklyData.notes,
+        energyLevel: 5 // Default for weekly
       };
 
       const res = await apiFetch('/progress/checkin', {
@@ -66,6 +76,7 @@ export default function Progress() {
       setWeeklyData({ weightKg: '', bodyFatPercent: '', notes: '' });
       toast.success('Weekly check-in logged!');
       fetchHistory();
+      fetchProjection();
     } catch (err) {
       toast.error('Failed to log check-in');
     } finally { setSubmitting(false); }
@@ -129,12 +140,47 @@ export default function Progress() {
           
           {activeTab === 'weekly' && (
             <div className="anim-fade-up">
-              {latestResponse && (
-                <div className="card" style={{ marginBottom: '24px', background: 'var(--primary-glow)', borderColor: 'var(--primary)' }}>
+              
+              {/* SMART PROJECTION WIDGET */}
+              {projection && projection.status !== 'NOT_ENOUGH_DATA' && (
+                <div className="card card-glow" style={{ marginBottom: '24px', background: 'var(--primary-glow)', borderColor: 'var(--primary)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 className="heading-3">Smart Momentum Projection 🚀</h3>
+                    <span className={`badge ${projection.status === 'LOSING' ? 'badge-accent' : 'badge-amber'}`}>
+                      {projection.status}
+                    </span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '24px', marginBottom: '16px' }}>
+                    <div style={{ flex: 1 }}>
+                      <div className="text-xs text-muted" style={{ marginBottom: '4px' }}>Avg. Weekly Change</div>
+                      <div className="heading-2" style={{ color: projection.status === 'LOSING' ? 'var(--accent-lt)' : 'var(--red)' }}>
+                        {projection.avgWeeklyChange > 0 ? '+' : ''}{projection.avgWeeklyChange} kg
+                      </div>
+                    </div>
+                    {projection.weeksToGoal && (
+                      <div style={{ flex: 1 }}>
+                        <div className="text-xs text-muted" style={{ marginBottom: '4px' }}>Estimated Date</div>
+                        <div className="heading-2 text-gradient">
+                          {new Date(projection.projectedDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <p className="text-sm" style={{ fontStyle: 'italic', color: 'var(--text-2)' }}>
+                    "{projection.message}"
+                  </p>
+                </div>
+              )}
+
+              {latestResponse && !projection && (
+                <div className="card" style={{ marginBottom: '24px', background: 'var(--bg-3)' }}>
                   <h3 className="heading-3">Week {latestResponse.weekNumber} Feedback</h3>
                   <p className="text-sm mt-2">"{latestResponse.aiMessage}"</p>
                 </div>
               )}
+
               <div className="card">
                 <h2 className="heading-2" style={{ marginBottom: '16px' }}>Weekly Check-in</h2>
                 <p className="text-muted text-sm" style={{ marginBottom: '24px' }}>Log your official weight and body fat for the week.</p>

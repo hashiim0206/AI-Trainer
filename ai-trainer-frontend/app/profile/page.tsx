@@ -20,6 +20,7 @@ export default function Profile() {
     gender: 'MALE',
     heightCm: '',
     weightKg: '',
+    targetWeightKg: '',
     trainingLevel: 'BEGINNER',
     dietPreference: 'ANY',
     sports: '',
@@ -43,6 +44,7 @@ export default function Profile() {
           gender: data.gender || 'MALE',
           heightCm: data.heightCm || '',
           weightKg: data.weightKg || '',
+          targetWeightKg: data.targetWeightKg || '',
           trainingLevel: data.trainingLevel || 'BEGINNER',
           dietPreference: data.dietPreference || 'ANY',
           sports: data.sports || '',
@@ -72,7 +74,8 @@ export default function Profile() {
         body: JSON.stringify({
           ...formData,
           heightCm: Number(formData.heightCm),
-          weightKg: Number(formData.weightKg)
+          weightKg: Number(formData.weightKg),
+          targetWeightKg: Number(formData.targetWeightKg)
         })
       });
       await fetchProfile();
@@ -123,12 +126,16 @@ export default function Profile() {
               <input type="number" step="0.1" className="form-input" value={formData.heightCm} onChange={e => setFormData({...formData, heightCm: e.target.value})} required />
             </div>
             <div className="form-group">
-              <label className="form-label">Weight (kg)</label>
+              <label className="form-label">Current Weight (kg)</label>
               <input type="number" step="0.1" className="form-input" value={formData.weightKg} onChange={e => setFormData({...formData, weightKg: e.target.value})} required />
             </div>
           </div>
 
           <div className="form-row-3" style={{ marginBottom: '16px' }}>
+            <div className="form-group">
+              <label className="form-label">Target Weight (kg) 🎯</label>
+              <input type="number" step="0.1" className="form-input" style={{ borderColor: 'var(--primary)', boxShadow: '0 0 10px var(--primary-glow)' }} value={formData.targetWeightKg} onChange={e => setFormData({...formData, targetWeightKg: e.target.value})} required placeholder="What weight are you aiming for?" />
+            </div>
             <div className="form-group">
               <label className="form-label">Training Level</label>
               <select className="form-input" value={formData.trainingLevel} onChange={e => setFormData({...formData, trainingLevel: e.target.value})}>
@@ -149,33 +156,43 @@ export default function Profile() {
                 <option value="HALAL">Halal</option>
               </select>
             </div>
+          </div>
+
+          <div className="form-row" style={{ marginBottom: '24px' }}>
             <div className="form-group">
               <label className="form-label">Country</label>
               <input type="text" className="form-input" value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} required placeholder="e.g. UK, USA" />
             </div>
-          </div>
-
-          <div className="form-group" style={{ marginBottom: '24px' }}>
-            <label className="form-label">Sports / Activities</label>
-            <input type="text" className="form-input" value={formData.sports} onChange={e => setFormData({...formData, sports: e.target.value})} placeholder="e.g. Football, Running (Optional)" />
+            <div className="form-group">
+              <label className="form-label">Sports / Activities</label>
+              <input type="text" className="form-input" value={formData.sports} onChange={e => setFormData({...formData, sports: e.target.value})} placeholder="e.g. Football, Running (Optional)" />
+            </div>
           </div>
 
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button type="submit" className="btn btn-primary">Save Profile</button>
+            <button type="submit" className="btn btn-primary">Save Profile & Set Goal</button>
             {profile && <button type="button" onClick={() => setIsEditing(false)} className="btn btn-ghost">Cancel</button>}
           </div>
         </form>
       ) : profile ? (
         <div className="anim-fade-up">
           <div className="card" style={{ marginBottom: '24px' }}>
-            <h2 className="heading-2" style={{ marginBottom: '16px' }}>{profile.fullName}</h2>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <span className="badge badge-primary">{profile.gender}</span>
-              <span className="badge badge-accent">{stats?.age} years old</span>
-              <span className="badge badge-amber">{profile.trainingLevel}</span>
-              <span className="badge badge-blue">{profile.dietPreference}</span>
-              {profile.sports && <span className="badge badge-primary">{profile.sports}</span>}
-              <span className="badge badge-accent">{profile.country}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+               <div>
+                <h2 className="heading-2" style={{ marginBottom: '8px' }}>{profile.fullName}</h2>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <span className="badge badge-primary">{profile.gender}</span>
+                  <span className="badge badge-accent">{stats?.age} years old</span>
+                  <span className="badge badge-amber">{profile.trainingLevel}</span>
+                  <span className="badge badge-blue">{profile.dietPreference}</span>
+                  {profile.sports && <span className="badge badge-primary">{profile.sports}</span>}
+                  <span className="badge badge-accent">{profile.country}</span>
+                </div>
+               </div>
+               <div style={{ textAlign: 'right' }}>
+                 <div className="text-xs text-muted" style={{ marginBottom: '4px' }}>Target Goal</div>
+                 <div className="heading-2 text-gradient">{profile.targetWeightKg} kg</div>
+               </div>
             </div>
           </div>
 

@@ -155,6 +155,54 @@ public class ProgressService {
                 .collect(Collectors.toList());
     }
 
+    public com.example.aitrainer.dto.WeightProjectionResponse getProjection() {
+        User user = getCurrentUser();
+        Profile profile = profileRepository.findByUser(user).orElseThrow();
+        List<ProgressEntry> entries = progressRepository.findByUserOrderByCheckinDateAsc(user);
+
+        com.example.aitrainer.dto.WeightProjectionResponse res = new com.example.aitrainer.dto.WeightProjectionResponse();
+        res.setTargetWeight(profile.getTargetWeightKg());
+        res.setCurrentWeight(entries.isEmpty() ? profile.getWeightKg() : entries.get(entries.size() - 1).getWeightKg());
+
+        if (entries.size() < 2) {
+            res.setStatus("NOT_ENOUGH_DATA");
+            res.setMessage("Log at least 2 weekly check-ins to see your projected results.");
+            return res;
+        }
+
+        // Calculate Average Weekly Change from the last 4 entries (Moving Average)
+        int startIdx = Math.max(0, entries.size() - 4);
+        ProgressEntry start = entries.get(startIdx);
+        ProgressEntry end = entries.get(entries.size() - 1);
+        int weeksElapsed = entries.size() - 1 - startIdx;
+        
+        if (weeksElapsed == 0) weeksElapsed = 1; // Prevent division by zero
+
+        double totalDelta = end.getWeightKg() - start.getWeightKg();
+        double avgWeeklyChange = totalDelta / weeksElapsed;
+        res.setAvgWeeklyChange(round(avgWeeklyChange, 2));
+
+        double remainingToGoal = end.getWeightKg() - profile.getTargetWeightKg();
+
+        if (avgWeeklyChange >= -0.05 && avgWeeklyChange <= 0.05) {
+            res.setStatus("STALLING");
+            res.setMessage("Your weight has been stable recently. Adjust your activity or diet to see progress towards your goal.");
+        } else if (avgWeeklyChange > 0.05) {
+            res.setStatus("GAINING");
+            res.setMessage("You are currently gaining weight. At this rate, you'll move further from your goal.");
+        } else {
+            // LOSING (Normal case)
+            res.setStatus("LOSING");
+            double weeksToGoal = Math.abs(remainingToGoal / avgWeeklyChange);
+            res.setWeeksToGoal((int) Math.ceil(weeksToGoal));
+            res.setProjectedDate(LocalDate.now().plusWeeks(res.getWeeksToGoal()).toString());
+            res.setMessage(String.format("Great momentum! At your current pace, you'll reach your goal in approximately %d weeks (%s).", 
+                res.getWeeksToGoal(), res.getProjectedDate()));
+        }
+
+        return res;
+    }
+
     // ── Trend logic ───────────────────────────────────────────────────────────
     // We use a 0.2kg threshold — anything less is "maintaining" (normal fluctuation)
     private String determineTrend(double totalChange, Double weeklyChange) {

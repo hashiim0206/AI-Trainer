@@ -32,4 +32,9 @@ public class ProgressController {
     public ResponseEntity<List<ProgressHistoryItem>> getHistory() {
         return ResponseEntity.ok(progressService.getHistory());
     }
+
+    @GetMapping("/projection")
+    public ResponseEntity<com.example.aitrainer.dto.WeightProjectionResponse> getProjection() {
+        return ResponseEntity.ok(progressService.getProjection());
+    }
 }

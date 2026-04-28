@@ -11,6 +11,7 @@ public class ProfileResponse {
     private String gender;
     private double heightCm;
     private double weightKg;
+    private double targetWeightKg;
     private String trainingLevel;
     private String dietPreference;
     private String sports;
@@ -46,6 +47,9 @@ public class ProfileResponse {
 
     public double getWeightKg() { return weightKg; }
     public void setWeightKg(double weightKg) { this.weightKg = weightKg; }
+
+    public double getTargetWeightKg() { return targetWeightKg; }
+    public void setTargetWeightKg(double targetWeightKg) { this.targetWeightKg = targetWeightKg; }
 
     public String getTrainingLevel() { return trainingLevel; }
     public void setTrainingLevel(String trainingLevel) { this.trainingLevel = trainingLevel; }
