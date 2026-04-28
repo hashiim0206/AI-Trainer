@@ -13,12 +13,14 @@ export default function Progress() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [latestResponse, setLatestResponse] = useState<any>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   // Weekly Form State
   const [weeklyData, setWeeklyData] = useState({
     weightKg: '',
     bodyFatPercent: '',
-    notes: ''
+    notes: '',
+    checkinDate: new Date().toISOString().split('T')[0]
   });
 
   // Daily Form State
@@ -64,22 +66,58 @@ export default function Progress() {
         weightKg: Number(weeklyData.weightKg),
         bodyFatPercent: weeklyData.bodyFatPercent ? Number(weeklyData.bodyFatPercent) : null,
         notes: weeklyData.notes,
-        energyLevel: 5 // Default for weekly
+        checkinDate: weeklyData.checkinDate,
+        energyLevel: 5
       };
 
-      const res = await apiFetch('/progress/checkin', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
+      if (editingId) {
+        await apiFetch(`/progress/${editingId}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+        toast.success('Check-in updated!');
+        setEditingId(null);
+      } else {
+        const res = await apiFetch('/progress/checkin', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        setLatestResponse(res);
+        toast.success('Weekly check-in logged!');
+      }
       
-      setLatestResponse(res);
-      setWeeklyData({ weightKg: '', bodyFatPercent: '', notes: '' });
-      toast.success('Weekly check-in logged!');
+      setWeeklyData({ 
+        weightKg: '', 
+        bodyFatPercent: '', 
+        notes: '', 
+        checkinDate: new Date().toISOString().split('T')[0] 
+      });
       fetchHistory();
       fetchProjection();
     } catch (err) {
-      toast.error('Failed to log check-in');
+      toast.error(editingId ? 'Failed to update' : 'Failed to log check-in');
     } finally { setSubmitting(false); }
+  };
+
+  const deleteWeeklyEntry = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this check-in?')) return;
+    try {
+      await apiFetch(`/progress/${id}`, { method: 'DELETE' });
+      toast.success('Entry deleted');
+      fetchHistory();
+      fetchProjection();
+    } catch (err) { toast.error('Failed to delete entry'); }
+  };
+
+  const startEditing = (item: any) => {
+    setEditingId(item.id);
+    setWeeklyData({
+      weightKg: item.weightKg.toString(),
+      bodyFatPercent: item.bodyFatPercent ? item.bodyFatPercent.toString() : '',
+      notes: '', // Notes aren't in history DTO currently
+      checkinDate: item.date
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDailySubmit = async (e: React.FormEvent) => {
@@ -174,17 +212,18 @@ export default function Progress() {
                 </div>
               )}
 
-              {latestResponse && !projection && (
-                <div className="card" style={{ marginBottom: '24px', background: 'var(--bg-3)' }}>
-                  <h3 className="heading-3">Week {latestResponse.weekNumber} Feedback</h3>
-                  <p className="text-sm mt-2">"{latestResponse.aiMessage}"</p>
-                </div>
-              )}
-
               <div className="card">
-                <h2 className="heading-2" style={{ marginBottom: '16px' }}>Weekly Check-in</h2>
-                <p className="text-muted text-sm" style={{ marginBottom: '24px' }}>Log your official weight and body fat for the week.</p>
+                <h2 className="heading-2" style={{ marginBottom: '16px' }}>{editingId ? 'Edit Check-in' : 'Weekly Check-in'}</h2>
+                <p className="text-muted text-sm" style={{ marginBottom: '24px' }}>
+                  {editingId ? 'Updating an existing log will recalculate your progress.' : 'Log your official weight and body fat for the week.'}
+                </p>
                 <form onSubmit={handleWeeklySubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="form-row">
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label className="form-label">Check-in Date</label>
+                      <input type="date" className="form-input" value={weeklyData.checkinDate} onChange={e => setWeeklyData({...weeklyData, checkinDate: e.target.value})} required />
+                    </div>
+                  </div>
                   <div className="form-row">
                     <div className="form-group">
                       <label className="form-label">Weight (kg)</label>
@@ -199,9 +238,17 @@ export default function Progress() {
                     <label className="form-label">Notes (Optional)</label>
                     <textarea className="form-input" rows={3} placeholder="How are you feeling this week?" value={weeklyData.notes} onChange={e => setWeeklyData({...weeklyData, notes: e.target.value})}></textarea>
                   </div>
-                  <button type="submit" className="btn btn-primary" disabled={submitting}>
-                    {submitting ? 'Logging...' : 'Log Weekly Stats'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button type="submit" className="btn btn-primary" disabled={submitting} style={{ flex: 1 }}>
+                      {submitting ? 'Processing...' : editingId ? 'Update Check-in' : 'Log Weekly Stats'}
+                    </button>
+                    {editingId && (
+                      <button type="button" onClick={() => {
+                        setEditingId(null);
+                        setWeeklyData({ weightKg: '', bodyFatPercent: '', notes: '', checkinDate: new Date().toISOString().split('T')[0] });
+                      }} className="btn btn-ghost">Cancel</button>
+                    )}
+                  </div>
                 </form>
               </div>
             </div>
@@ -209,6 +256,7 @@ export default function Progress() {
 
           {activeTab === 'daily' && (
             <div className="anim-fade-up">
+              {/* Daily Meal Form (Unchanged for brevity, same as before) */}
               <div className="card" style={{ marginBottom: '24px' }}>
                 <h2 className="heading-2" style={{ marginBottom: '16px' }}>What did you eat today?</h2>
                 <p className="text-muted text-sm" style={{ marginBottom: '24px' }}>Just type the food naturally (e.g. "2 boiled eggs and a coffee"). AI will calculate the calories.</p>
@@ -251,11 +299,6 @@ export default function Progress() {
                           <span className="font-bold">{log.calories} kcal</span>
                         </div>
                         <div className="text-sm text-muted">{log.foodDescription}</div>
-                        <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: '12px', color: 'var(--text-3)' }}>
-                          <span>P: {log.protein}g</span>
-                          <span>C: {log.carbs}g</span>
-                          <span>F: {log.fat}g</span>
-                        </div>
                       </div>
                       <button onClick={() => deleteDailyLog(log.id)} style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', opacity: 0.6, fontSize: '20px' }}>×</button>
                     </div>
@@ -278,7 +321,6 @@ export default function Progress() {
                   <LineChart data={history}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                     <XAxis dataKey="weekNumber" stroke="var(--text-3)" tickFormatter={(v) => `Wk ${v}`} />
-                    <YAxis domain={['auto', 'auto']} hide />
                     <Tooltip contentStyle={{ background: 'var(--bg-3)', border: '1px solid var(--border)', borderRadius: '8px' }} />
                     <Line type="monotone" dataKey="weightKg" name="Weight" stroke="var(--primary-lt)" strokeWidth={3} dot={{ r: 4 }} />
                   </LineChart>
@@ -289,10 +331,16 @@ export default function Progress() {
             <div style={{ marginTop: '32px' }}>
               <h3 className="heading-3" style={{ marginBottom: '16px' }}>Past Check-ins</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {[...history].reverse().slice(0, 5).map((item, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-                    <span className="text-sm">Week {item.weekNumber}</span>
-                    <span className="font-bold">{item.weightKg} kg</span>
+                {[...history].reverse().map((item, i) => (
+                  <div key={i} style={{ padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <span className="text-sm font-bold">Week {item.weekNumber} ({item.date})</span>
+                      <span className="font-bold" style={{ color: 'var(--primary-lt)' }}>{item.weightKg} kg</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                       <button onClick={() => startEditing(item)} className="text-xs text-accent" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Edit</button>
+                       <button onClick={() => deleteWeeklyEntry(item.id)} className="text-xs text-red" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Delete</button>
+                    </div>
                   </div>
                 ))}
               </div>

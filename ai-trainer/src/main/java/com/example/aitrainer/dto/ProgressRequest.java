@@ -4,6 +4,8 @@ import jakarta.validation.constraints.*;
 
 public class ProgressRequest {
 
+    private java.time.LocalDate checkinDate; // Optional — defaults to today if null
+
     @NotNull(message = "Weight is required")
     @Positive(message = "Weight must be positive")
     private Double weightKg;
@@ -23,6 +25,9 @@ public class ProgressRequest {
     private String notes;
 
     // Getters and Setters
+    public java.time.LocalDate getCheckinDate() { return checkinDate; }
+    public void setCheckinDate(java.time.LocalDate checkinDate) { this.checkinDate = checkinDate; }
+
     public Double getWeightKg() { return weightKg; }
     public void setWeightKg(Double weightKg) { this.weightKg = weightKg; }
 

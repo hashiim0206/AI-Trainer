@@ -15,7 +15,7 @@ public interface ProgressRepository extends JpaRepository<ProgressEntry, Long> {
     List<ProgressEntry> findByUserOrderByCheckinDateAsc(User user);
 
     // Most recent entry — for "last week's weight" comparison
-    Optional<ProgressEntry> findFirstByUserOrderByCheckinDateDesc(User user);
+    Optional<ProgressEntry> findFirstByUserOrderByCheckinDateDescIdDesc(User user);
 
     // Count how many check-ins a user has done
     long countByUser(User user);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { apiFetch, getToken } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 export default function CalorieCalculator() {
   const [formData, setFormData] = useState({
@@ -13,9 +14,17 @@ export default function CalorieCalculator() {
     goal: 'MAINTAIN'
   });
 
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+
   useEffect(() => {
+    loadSyncedProfile();
+  }, []);
+
+  const loadSyncedProfile = async () => {
     if (getToken()) {
-      apiFetch('/profile/me').then(profile => {
+      setIsLoadingProfile(true);
+      try {
+        const profile = await apiFetch('/profile/me');
         if (profile) {
           setFormData(prev => ({
             ...prev,
@@ -24,10 +33,15 @@ export default function CalorieCalculator() {
             weight: profile.weightKg.toString(),
             height: profile.heightCm.toString()
           }));
+          toast.success('Stats synced with your latest progress!');
         }
-      }).catch(err => console.error("Profile load failed", err));
+      } catch (err) {
+        console.error("Profile load failed", err);
+      } finally {
+        setIsLoadingProfile(false);
+      }
     }
-  }, []);
+  };
 
   const [results, setResults] = useState<{
     bmr: number;
@@ -60,8 +74,8 @@ export default function CalorieCalculator() {
 
     // 3. Adjust for Goal
     let targetCalories = tdee;
-    if (formData.goal === 'LOSE') targetCalories -= 500; // 500 cal deficit (~0.5kg/week loss)
-    if (formData.goal === 'GAIN') targetCalories += 300; // 300 cal surplus (lean bulk)
+    if (formData.goal === 'LOSE') targetCalories -= 500; // 500 cal deficit
+    if (formData.goal === 'GAIN') targetCalories += 300; // 300 cal surplus
 
     // 4. Calculate Macros (Standard balanced diet: 30% P, 40% C, 30% F)
     const proteinCals = targetCalories * 0.3;
@@ -72,9 +86,9 @@ export default function CalorieCalculator() {
       bmr: Math.round(bmr),
       tdee: Math.round(tdee),
       targetCalories: Math.round(targetCalories),
-      protein: Math.round(proteinCals / 4), // 4 cals per gram of protein
-      carbs: Math.round(carbCals / 4),      // 4 cals per gram of carbs
-      fats: Math.round(fatCals / 9)         // 9 cals per gram of fat
+      protein: Math.round(proteinCals / 4),
+      carbs: Math.round(carbCals / 4),
+      fats: Math.round(fatCals / 9)
     });
   };
 
@@ -82,12 +96,18 @@ export default function CalorieCalculator() {
     <div className="container section" style={{ display: 'flex', gap: '32px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
       
       <div className="card anim-fade-up" style={{ flex: '1 1 400px' }}>
-        <h1 className="heading-1" style={{ marginBottom: '8px' }}>Macro Calculator</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+          <h1 className="heading-1">Macro Calculator</h1>
+          <button onClick={loadSyncedProfile} disabled={isLoadingProfile} className="text-xs text-accent" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            {isLoadingProfile ? 'Syncing...' : '🔄 Refresh from Profile'}
+          </button>
+        </div>
         <p className="text-muted text-sm" style={{ marginBottom: '24px' }}>
-          Calculate your exact daily calories and macros (Protein, Carbs, Fats) based on science.
+          Your weight and height are automatically synced with your latest weekly progress.
         </p>
 
         <form onSubmit={calculate} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Form fields (Same as before but with better labels) */}
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">Age</label>
@@ -173,7 +193,6 @@ export default function CalorieCalculator() {
           </div>
         </div>
       )}
-
     </div>
   );
 }

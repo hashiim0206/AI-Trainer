@@ -86,7 +86,7 @@ public class ProgressService {
         // ── Save to database ──────────────────────────────────────────────────
         ProgressEntry entry = new ProgressEntry();
         entry.setUser(user);
-        entry.setCheckinDate(LocalDate.now());
+        entry.setCheckinDate(request.getCheckinDate() != null ? request.getCheckinDate() : LocalDate.now());
         entry.setWeightKg(request.getWeightKg());
         entry.setBodyFatPercent(request.getBodyFatPercent());
         entry.setEnergyLevel(request.getEnergyLevel());
@@ -138,6 +138,7 @@ public class ProgressService {
                 .mapToObj(i -> {
                     ProgressEntry e = entries.get(i);
                     ProgressHistoryItem item = new ProgressHistoryItem();
+                    item.setId(e.getId()); // Crucial for Edit/Delete
                     item.setDate(e.getCheckinDate());
                     item.setWeekNumber(i + 1);
                     item.setWeightKg(e.getWeightKg());
@@ -153,6 +154,44 @@ public class ProgressService {
                     return item;
                 })
                 .collect(Collectors.toList());
+    }
+
+    public void deleteEntry(Long id) {
+        User user = getCurrentUser();
+        ProgressEntry entry = progressRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Entry not found"));
+        
+        if (!entry.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized to delete this entry");
+        }
+        
+        progressRepository.delete(entry);
+    }
+
+    public void updateEntry(Long id, ProgressRequest request) {
+        User user = getCurrentUser();
+        ProgressEntry entry = progressRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Entry not found"));
+        
+        if (!entry.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized to update this entry");
+        }
+
+        entry.setWeightKg(request.getWeightKg());
+        entry.setBodyFatPercent(request.getBodyFatPercent());
+        entry.setEnergyLevel(request.getEnergyLevel());
+        entry.setNotes(request.getNotes());
+        entry.setCaloriesConsumed(request.getCaloriesConsumed());
+        entry.setProteinConsumed(request.getProteinConsumed());
+        entry.setCarbsConsumed(request.getCarbsConsumed());
+        entry.setFatConsumed(request.getFatConsumed());
+        entry.setWorkoutCompleted(request.getWorkoutCompleted());
+        entry.setDietCompleted(request.getDietCompleted());
+        if (request.getCheckinDate() != null) {
+            entry.setCheckinDate(request.getCheckinDate());
+        }
+        
+        progressRepository.save(entry);
     }
 
     public com.example.aitrainer.dto.WeightProjectionResponse getProjection() {

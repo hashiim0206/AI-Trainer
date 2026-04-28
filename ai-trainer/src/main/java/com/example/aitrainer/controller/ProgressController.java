@@ -37,4 +37,16 @@ public class ProgressController {
     public ResponseEntity<com.example.aitrainer.dto.WeightProjectionResponse> getProjection() {
         return ResponseEntity.ok(progressService.getProjection());
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEntry(@PathVariable Long id) {
+        progressService.deleteEntry(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateEntry(@PathVariable Long id, @Valid @RequestBody ProgressRequest request) {
+        progressService.updateEntry(id, request);
+        return ResponseEntity.ok().build();
+    }
 }

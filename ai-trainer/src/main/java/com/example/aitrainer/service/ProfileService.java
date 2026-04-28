@@ -74,7 +74,7 @@ public class ProfileService {
     // Build the response object: combine profile data + calculated stats
     private ProfileResponse buildResponse(User user, Profile profile) {
         // Find latest check-in weight to use as the "Current Weight" for stats
-        Double latestWeight = progressRepository.findFirstByUserOrderByCheckinDateDesc(user)
+        Double latestWeight = progressRepository.findFirstByUserOrderByCheckinDateDescIdDesc(user)
                 .map(com.example.aitrainer.model.ProgressEntry::getWeightKg)
                 .orElse(profile.getWeightKg());
 
