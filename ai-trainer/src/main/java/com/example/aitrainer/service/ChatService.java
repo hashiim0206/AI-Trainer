@@ -3,12 +3,15 @@ package com.example.aitrainer.service;
 import com.example.aitrainer.dto.ChatHistoryItem;
 import com.example.aitrainer.dto.ChatRequest;
 import com.example.aitrainer.dto.ChatResponse;
+import com.example.aitrainer.dto.ChatSessionResponse;
 import com.example.aitrainer.dto.StatsResult;
 import com.example.aitrainer.model.ChatMessage;
+import com.example.aitrainer.model.ChatSession;
 import com.example.aitrainer.model.Plan;
 import com.example.aitrainer.model.Profile;
 import com.example.aitrainer.model.User;
 import com.example.aitrainer.repository.ChatMessageRepository;
+import com.example.aitrainer.repository.ChatSessionRepository;
 import com.example.aitrainer.repository.PlanRepository;
 import com.example.aitrainer.repository.ProfileRepository;
 import com.example.aitrainer.repository.UserRepository;
@@ -24,6 +27,7 @@ import java.util.stream.Collectors;
 public class ChatService {
 
     private final ChatMessageRepository chatMessageRepository;
+    private final ChatSessionRepository chatSessionRepository;
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
     private final PlanRepository planRepository;
@@ -31,12 +35,14 @@ public class ChatService {
     private final GeminiService geminiService;
 
     public ChatService(ChatMessageRepository chatMessageRepository,
+                       ChatSessionRepository chatSessionRepository,
                        UserRepository userRepository,
                        ProfileRepository profileRepository,
                        PlanRepository planRepository,
                        StatsCalculatorService statsCalculator,
                        GeminiService geminiService) {
         this.chatMessageRepository = chatMessageRepository;
+        this.chatSessionRepository = chatSessionRepository;
         this.userRepository = userRepository;
         this.profileRepository = profileRepository;
         this.planRepository = planRepository;
@@ -50,30 +56,62 @@ public class ChatService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    // ── Session Management ──────────────────────────────────────────────────
+    public List<ChatSessionResponse> getSessions() {
+        User user = getCurrentUser();
+        return chatSessionRepository.findByUserOrderByUpdatedAtDesc(user)
+                .stream()
+                .map(session -> new ChatSessionResponse(session.getId(), session.getTitle(), session.getUpdatedAt()))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteSession(Long sessionId) {
+        User user = getCurrentUser();
+        ChatSession session = chatSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+        if (!session.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized");
+        }
+        chatSessionRepository.delete(session);
+    }
+
+    // Generate a short 3-4 word title for a new chat session based on the first message
+    private String generateSessionTitle(String firstMessage) {
+        try {
+            String prompt = "Generate a very short 3-4 word title summarizing this message. Do NOT use quotes. Message: " + firstMessage;
+            return geminiService.generate(prompt).replaceAll("\"", "").trim();
+        } catch (Exception e) {
+            return "New Chat";
+        }
+    }
+
+    // ── Chat Logic ──────────────────────────────────────────────────────────
     public ChatResponse chat(ChatRequest request) {
         User user = getCurrentUser();
 
-        // ── Step 1: Load user context ─────────────────────────────────────────
-        // The AI needs to KNOW the user to give personalised responses.
-        // We load their profile and latest goal here.
+        // Step 1: Find or Create Session
+        ChatSession session;
+        if (request.getSessionId() != null) {
+            session = chatSessionRepository.findById(request.getSessionId())
+                    .orElseThrow(() -> new RuntimeException("Session not found"));
+            if (!session.getUser().getId().equals(user.getId())) throw new RuntimeException("Unauthorized");
+        } else {
+            // It's a new session! Let's auto-generate a title based on what they just asked.
+            String title = generateSessionTitle(request.getMessage());
+            session = new ChatSession(user, title, LocalDateTime.now());
+            session = chatSessionRepository.save(session);
+        }
+
         Profile profile = profileRepository.findByUser(user).orElse(null);
         Plan latestPlan = planRepository.findFirstByUserOrderByGeneratedAtDesc(user).orElse(null);
 
-        // ── Step 2: Build the System Context message ──────────────────────────
-        // The "system" message is like instructions given to the AI at the START
-        // of every conversation. The user never sees this — it shapes how the AI behaves.
         String systemContext = buildSystemContext(user, profile, latestPlan);
 
-        // ── Step 3: Load conversation history (the "memory") ─────────────────
-        // We fetch the LAST 20 messages (10 exchanges) to give the AI context.
-        // We don't load ALL history — that would use too many tokens.
-        // This sliding window is the standard technique used in real AI chat apps.
-        List<ChatMessage> recentHistory = chatMessageRepository.findTop20ByUserOrderByTimestampDesc(user);
-        Collections.reverse(recentHistory); // Put back into chronological order
+        // Fetch recent history FOR THIS SESSION ONLY
+        List<ChatMessage> recentHistory = chatMessageRepository.findTop20BySessionOrderByTimestampDesc(session);
+        Collections.reverse(recentHistory);
 
-        // ── Step 4: Build the messages array ─────────────────────────────────
-        // This is the format ALL major AI APIs expect:
-        // [ {system context}, {user: "hi"}, {assistant: "hello!"}, {user: "new msg"} ]
         List<Map<String, Object>> messages = new ArrayList<>();
 
         Map<String, Object> systemMsg = new HashMap<>();
@@ -93,44 +131,41 @@ public class ChatService {
         newUserMsg.put("content", request.getMessage());
         messages.add(newUserMsg);
 
-        // ── Step 5: Save the user's message BEFORE calling the AI ────────────
-        // We save first so even if the AI fails, we have a record of the question.
-        ChatMessage userChatMessage = new ChatMessage(user, "user", request.getMessage(), LocalDateTime.now());
+        // Save the user's message linked to the session
+        ChatMessage userChatMessage = new ChatMessage(user, session, "user", request.getMessage(), LocalDateTime.now());
         chatMessageRepository.save(userChatMessage);
 
-        // ── Step 6: Call the AI with full conversation context ────────────────
+        // Update the session's 'updatedAt' time so it jumps to the top of the list
+        session.setUpdatedAt(LocalDateTime.now());
+        chatSessionRepository.save(session);
+
+        // Call AI
         String aiReply = geminiService.generateWithMessages(messages);
 
-        // ── Step 7: Save the AI's reply to keep the conversation going ────────
-        ChatMessage assistantMessage = new ChatMessage(user, "assistant", aiReply, LocalDateTime.now());
+        // Save AI reply
+        ChatMessage assistantMessage = new ChatMessage(user, session, "assistant", aiReply, LocalDateTime.now());
         chatMessageRepository.save(assistantMessage);
 
-        // ── Step 8: Return the reply ──────────────────────────────────────────
         ChatResponse response = new ChatResponse();
         response.setReply(aiReply);
         response.setTimestamp(assistantMessage.getTimestamp());
+        response.setSessionId(session.getId()); // Return the sessionId so the frontend knows what session we're in
         return response;
     }
 
-    // Get the full conversation history for display
-    public List<ChatHistoryItem> getHistory() {
+    // Get the full conversation history for a specific session
+    public List<ChatHistoryItem> getHistory(Long sessionId) {
         User user = getCurrentUser();
-        return chatMessageRepository.findByUserOrderByTimestampAsc(user)
+        ChatSession session = chatSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+        if (!session.getUser().getId().equals(user.getId())) throw new RuntimeException("Unauthorized");
+
+        return chatMessageRepository.findBySessionOrderByTimestampAsc(session)
                 .stream()
                 .map(msg -> new ChatHistoryItem(msg.getRole(), msg.getContent(), msg.getTimestamp()))
                 .collect(Collectors.toList());
     }
 
-    // Clear the chat (start fresh — the AI forgets previous conversation)
-    @Transactional
-    public void clearHistory() {
-        User user = getCurrentUser();
-        chatMessageRepository.deleteByUser(user);
-    }
-
-    // ── Build the AI's "secret instructions" ─────────────────────────────────
-    // This is what makes it a PERSONAL trainer and not a generic chatbot.
-    // The AI is given the user's stats, goal, and behavioural rules.
     private String buildSystemContext(User user, Profile profile, Plan latestPlan) {
         StringBuilder ctx = new StringBuilder();
 

@@ -27,11 +27,23 @@ public class ChatMessage {
     @Column(nullable = false)
     private LocalDateTime timestamp;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id")
+    private ChatSession session;
+
     // Constructors
     public ChatMessage() {}
 
     public ChatMessage(User user, String role, String content, LocalDateTime timestamp) {
         this.user = user;
+        this.role = role;
+        this.content = content;
+        this.timestamp = timestamp;
+    }
+
+    public ChatMessage(User user, ChatSession session, String role, String content, LocalDateTime timestamp) {
+        this.user = user;
+        this.session = session;
         this.role = role;
         this.content = content;
         this.timestamp = timestamp;
@@ -51,4 +63,7 @@ public class ChatMessage {
 
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+
+    public ChatSession getSession() { return session; }
+    public void setSession(ChatSession session) { this.session = session; }
 }

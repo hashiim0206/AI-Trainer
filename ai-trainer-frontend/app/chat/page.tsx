@@ -6,23 +6,44 @@ import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
 
 export default function Chat() {
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchHistory();
+    fetchSessions();
   }, []);
 
   useEffect(() => {
-    // Scroll to bottom when new messages arrive
+    if (currentSessionId) {
+      fetchHistory(currentSessionId);
+    } else {
+      setMessages([]);
+    }
+  }, [currentSessionId]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const fetchHistory = async () => {
+  const fetchSessions = async () => {
     try {
-      const data = await apiFetch('/chat/history');
+      const data = await apiFetch('/chat/sessions');
+      setSessions(data);
+      if (data.length > 0 && !currentSessionId) {
+        setCurrentSessionId(data[0].id);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchHistory = async (sessionId: number) => {
+    try {
+      const data = await apiFetch(`/chat/history/${sessionId}`);
       setMessages(data);
     } catch (err) {
       console.error(err);
@@ -39,52 +60,112 @@ export default function Chat() {
     setLoading(true);
 
     try {
+      const payload: any = { message: userMsg.content };
+      if (currentSessionId) payload.sessionId = currentSessionId;
+
       const res = await apiFetch('/chat', {
         method: 'POST',
-        body: JSON.stringify({ message: userMsg.content })
+        body: JSON.stringify(payload)
       });
       
       const aiMsg = { role: 'assistant', content: res.reply, timestamp: res.timestamp };
       setMessages(prev => [...prev, aiMsg]);
+      
+      // If it was a new session, update our state and refresh the sidebar
+      if (!currentSessionId && res.sessionId) {
+        setCurrentSessionId(res.sessionId);
+        fetchSessions();
+      }
     } catch (err: any) {
       console.error(err);
-      // Remove the optimistic message if failed
       setMessages(prev => prev.filter(m => m !== userMsg));
-      toast.error('The AI coach is temporarily unavailable. Please try again.');
+      toast.error('The AI coach is temporarily unavailable.');
     } finally {
       setLoading(false);
     }
   };
 
-  const clearChat = async () => {
-    if (!confirm('Are you sure you want to clear the conversation history?')) return;
+  const createNewChat = () => {
+    setCurrentSessionId(null);
+    setMessages([]);
+  };
+
+  const deleteSession = async (sessionId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this chat session?')) return;
+    
     try {
-      await apiFetch('/chat/clear', { method: 'DELETE' });
-      setMessages([]);
+      await apiFetch(`/chat/session/${sessionId}`, { method: 'DELETE' });
+      const updatedSessions = sessions.filter(s => s.id !== sessionId);
+      setSessions(updatedSessions);
+      if (currentSessionId === sessionId) {
+        setCurrentSessionId(updatedSessions.length > 0 ? updatedSessions[0].id : null);
+      }
+      toast.success('Session deleted');
     } catch (err) {
       console.error(err);
+      toast.error('Failed to delete session');
     }
   };
 
   return (
-    <div className="container section" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)', paddingBottom: '24px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h1 className="heading-2">Your AI Coach</h1>
-          <p className="text-muted text-sm">Ask about your diet, workouts, or just stay motivated.</p>
+    <div className="container" style={{ display: 'flex', height: 'calc(100vh - 80px)', paddingTop: '24px', paddingBottom: '24px', gap: '24px' }}>
+      
+      {/* Sidebar for Sessions */}
+      <div className="card" style={{ width: '280px', display: 'flex', flexDirection: 'column', padding: '16px' }}>
+        <button onClick={createNewChat} className="btn btn-primary" style={{ marginBottom: '16px', justifyContent: 'center' }}>
+          + New Chat
+        </button>
+        
+        <h3 className="text-muted text-sm text-uppercase" style={{ marginBottom: '12px', fontWeight: 'bold', letterSpacing: '0.05em' }}>Recent Chats</h3>
+        
+        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {sessions.length === 0 && (
+            <p className="text-muted text-sm">No recent chats.</p>
+          )}
+          {sessions.map(session => (
+            <div 
+              key={session.id} 
+              onClick={() => setCurrentSessionId(session.id)}
+              style={{
+                padding: '12px', borderRadius: '8px', cursor: 'pointer',
+                background: currentSessionId === session.id ? 'var(--primary-glow)' : 'transparent',
+                border: `1px solid ${currentSessionId === session.id ? 'var(--primary)' : 'transparent'}`,
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                transition: 'all 0.2s'
+              }}
+              className="hover-bg"
+            >
+              <span style={{ fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, color: currentSessionId === session.id ? 'var(--text)' : 'var(--text-2)' }}>
+                {session.title}
+              </span>
+              <button 
+                onClick={(e) => deleteSession(session.id, e)}
+                style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: '4px', opacity: 0.6 }}
+                title="Delete Chat"
+              >
+                ×
+              </button>
+            </div>
+          ))}
         </div>
-        {messages.length > 0 && (
-          <button onClick={clearChat} className="btn btn-ghost btn-sm text-muted">Clear History</button>
-        )}
       </div>
 
+      {/* Main Chat Area */}
       <div className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: 0 }}>
         
-        {/* Chat Messages Area */}
+        {/* Header */}
+        <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border)', background: 'var(--bg-3)' }}>
+          <h2 className="heading-3">{currentSessionId ? sessions.find(s => s.id === currentSessionId)?.title || 'Chat' : 'New Chat'}</h2>
+        </div>
+
+        {/* Chat Messages */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {messages.length === 0 ? (
-            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)' }}>
-              Send a message to start chatting with your coach.
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🤖</div>
+              <h3 className="heading-3">How can I help you today?</h3>
+              <p className="text-muted text-sm mt-2">Ask about diet, form, or feeling sore.</p>
             </div>
           ) : (
             messages.map((msg, idx) => (
@@ -116,9 +197,7 @@ export default function Chat() {
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   ) : (
                     msg.content.split('\n').map((line: string, i: number) => (
-                      <p key={i} style={{ marginBottom: line ? '8px' : 0 }}>
-                        {line}
-                      </p>
+                      <p key={i} style={{ marginBottom: line ? '8px' : 0 }}>{line}</p>
                     ))
                   )}
                 </div>

@@ -29,18 +29,19 @@ public class ChatController {
         return ResponseEntity.ok(chatService.chat(request));
     }
 
-    // Get the full conversation history
-    // GET /api/chat/history
-    @GetMapping("/history")
-    public ResponseEntity<List<ChatHistoryItem>> getHistory() {
-        return ResponseEntity.ok(chatService.getHistory());
+    @GetMapping("/sessions")
+    public ResponseEntity<List<com.example.aitrainer.dto.ChatSessionResponse>> getSessions() {
+        return ResponseEntity.ok(chatService.getSessions());
     }
 
-    // Clear the conversation (the AI forgets everything)
-    // DELETE /api/chat/clear
-    @DeleteMapping("/clear")
-    public ResponseEntity<String> clearHistory() {
-        chatService.clearHistory();
-        return ResponseEntity.ok("Chat cleared. Starting fresh!");
+    @GetMapping("/history/{sessionId}")
+    public ResponseEntity<List<ChatHistoryItem>> getHistory(@PathVariable Long sessionId) {
+        return ResponseEntity.ok(chatService.getHistory(sessionId));
+    }
+
+    @DeleteMapping("/session/{sessionId}")
+    public ResponseEntity<String> deleteSession(@PathVariable Long sessionId) {
+        chatService.deleteSession(sessionId);
+        return ResponseEntity.ok("Session deleted.");
     }
 }

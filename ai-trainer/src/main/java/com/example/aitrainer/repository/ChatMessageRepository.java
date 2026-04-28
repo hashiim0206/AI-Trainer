@@ -16,6 +16,10 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     // Last 20 messages (10 exchanges) for AI context window — newest first, then we reverse
     List<ChatMessage> findTop20ByUserOrderByTimestampDesc(User user);
 
+    // Session-based queries
+    List<ChatMessage> findBySessionOrderByTimestampAsc(com.example.aitrainer.model.ChatSession session);
+    List<ChatMessage> findTop20BySessionOrderByTimestampDesc(com.example.aitrainer.model.ChatSession session);
+
     // Delete all messages for a user (clear chat)
     void deleteByUser(User user);
 }
