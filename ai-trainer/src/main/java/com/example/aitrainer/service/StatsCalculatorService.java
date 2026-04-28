@@ -10,6 +10,10 @@ import java.time.Period;
 @Service
 public class StatsCalculatorService {
 
+    public StatsResult calculate(Profile profile) {
+        return calculate(profile, null);
+    }
+
     public StatsResult calculate(Profile profile, Double latestWeight) {
         int age = Period.between(profile.getDateOfBirth(), LocalDate.now()).getYears();
 
