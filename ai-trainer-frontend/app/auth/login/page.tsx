@@ -28,7 +28,7 @@ export default function Login() {
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Login failed');
-      toast.error('Invalid username or password');
+      toast.error('Invalid username/email or password');
     } finally {
       setLoading(false);
     }
@@ -36,50 +36,46 @@ export default function Login() {
 
   return (
     <div className="container section" style={{ display: 'flex', justifyContent: 'center' }}>
-      <div className="card anim-fade-up" style={{ width: '100%', maxWidth: '400px' }}>
-        <h2 className="heading-2" style={{ marginBottom: '24px', textAlign: 'center' }}>Welcome Back</h2>
-        
+      <div className="card anim-fade-up" style={{ width: '100%', maxWidth: '420px' }}>
+        <h2 className="heading-2" style={{ marginBottom: '8px', textAlign: 'center' }}>Welcome Back</h2>
+        <p className="text-muted text-sm" style={{ textAlign: 'center', marginBottom: '24px' }}>
+          Log in with your username or email address.
+        </p>
+
         {error && <div className="alert alert-error" style={{ marginBottom: '16px' }}>{error}</div>}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div className="form-group">
-            <label className="form-label">Username</label>
-            <input 
-              type="text" 
-              className="form-input" 
+            <label className="form-label">Username or Email</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="john123 or you@example.com"
               value={formData.username}
               onChange={e => setFormData({...formData, username: e.target.value})}
-              required 
+              required
             />
-            <span className="text-muted text-xs" style={{ marginTop: '4px', display: 'block' }}>
-              Must contain both letters and numbers (e.g. john123).
-            </span>
           </div>
-          
+
           <div className="form-group">
             <label className="form-label">Password</label>
             <div style={{ position: 'relative' }}>
-              <input 
-                type={showPassword ? "text" : "password"} 
-                className="form-input" 
+              <input
+                type={showPassword ? "text" : "password"}
+                className="form-input"
+                placeholder="Your password"
                 value={formData.password}
                 onChange={e => setFormData({...formData, password: e.target.value})}
-                required 
+                required
                 style={{ paddingRight: '40px' }}
               />
-              <button 
+              <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
-                  position: 'absolute',
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-2)',
-                  cursor: 'pointer',
-                  fontSize: '18px'
+                  position: 'absolute', right: '12px', top: '50%',
+                  transform: 'translateY(-50%)', background: 'none',
+                  border: 'none', color: 'var(--text-2)', cursor: 'pointer', fontSize: '18px'
                 }}
                 title={showPassword ? "Hide password" : "Show password"}
               >

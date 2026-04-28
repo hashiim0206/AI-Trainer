@@ -36,6 +36,34 @@
   --transition:  0.2s cubic-bezier(0.4,0,0.2,1);
 }
 
+/* ── Light Mode Theme ──────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:          #f0f4f8;
+  --bg-2:        #e2e8f0;
+  --bg-3:        #ffffff;
+  --glass:       rgba(255,255,255,0.7);
+  --glass-hover: rgba(255,255,255,0.9);
+  --border:      rgba(0,0,0,0.1);
+  --border-glow: rgba(99,102,241,0.4);
+
+  --text:        #1e293b;
+  --text-2:      #475569;
+  --text-3:      #94a3b8;
+
+  --shadow:      0 4px 32px rgba(0,0,0,0.1);
+}
+
+[data-theme="light"] body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+[data-theme="light"] .form-input {
+  background: #ffffff;
+  color: var(--text);
+}
+
+
 /* ── Reset ─────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }

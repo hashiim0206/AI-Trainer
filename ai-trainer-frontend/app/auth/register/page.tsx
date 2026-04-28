@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 export default function Register() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [formData, setFormData] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -35,50 +35,64 @@ export default function Register() {
 
   return (
     <div className="container section" style={{ display: 'flex', justifyContent: 'center' }}>
-      <div className="card anim-fade-up" style={{ width: '100%', maxWidth: '400px' }}>
-        <h2 className="heading-2" style={{ marginBottom: '24px', textAlign: 'center' }}>Create Account</h2>
-        
+      <div className="card anim-fade-up" style={{ width: '100%', maxWidth: '420px' }}>
+        <h2 className="heading-2" style={{ marginBottom: '8px', textAlign: 'center' }}>Create Account</h2>
+        <p className="text-muted text-sm" style={{ textAlign: 'center', marginBottom: '24px' }}>
+          Start your AI-powered fitness journey today.
+        </p>
+
         {error && <div className="alert alert-error" style={{ marginBottom: '16px' }}>{error}</div>}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div className="form-group">
             <label className="form-label">Username</label>
-            <input 
-              type="text" 
-              className="form-input" 
+            <input
+              type="text"
+              className="form-input"
+              placeholder="e.g. john123"
               value={formData.username}
               onChange={e => setFormData({...formData, username: e.target.value})}
-              required 
+              required
             />
             <span className="text-muted text-xs" style={{ marginTop: '4px', display: 'block' }}>
               Must be unique and contain both letters and numbers (e.g. john123).
             </span>
           </div>
-          
+
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input
+              type="email"
+              className="form-input"
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={e => setFormData({...formData, email: e.target.value})}
+              required
+            />
+            <span className="text-muted text-xs" style={{ marginTop: '4px', display: 'block' }}>
+              You can use your email to log in as well.
+            </span>
+          </div>
+
           <div className="form-group">
             <label className="form-label">Password</label>
             <div style={{ position: 'relative' }}>
-              <input 
-                type={showPassword ? "text" : "password"} 
-                className="form-input" 
+              <input
+                type={showPassword ? "text" : "password"}
+                className="form-input"
+                placeholder="At least 6 characters"
                 value={formData.password}
                 onChange={e => setFormData({...formData, password: e.target.value})}
-                required 
+                required
                 style={{ paddingRight: '40px' }}
               />
-              <button 
+              <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
-                  position: 'absolute',
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-2)',
-                  cursor: 'pointer',
-                  fontSize: '18px'
+                  position: 'absolute', right: '12px', top: '50%',
+                  transform: 'translateY(-50%)', background: 'none',
+                  border: 'none', color: 'var(--text-2)', cursor: 'pointer', fontSize: '18px'
                 }}
                 title={showPassword ? "Hide password" : "Show password"}
               >
@@ -91,7 +105,7 @@ export default function Register() {
           </div>
 
           <button type="submit" className="btn btn-primary" style={{ justifyContent: 'center', marginTop: '8px' }} disabled={loading}>
-            {loading ? <span className="spinner"></span> : 'Register'}
+            {loading ? <span className="spinner"></span> : 'Create Account'}
           </button>
         </form>
 

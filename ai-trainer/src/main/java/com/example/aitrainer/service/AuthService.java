@@ -14,7 +14,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
-    // Manual Constructor for Dependency Injection
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -25,27 +24,30 @@ public class AuthService {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("Error: Username is already taken!");
         }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Error: Email is already registered!");
+        }
 
-        // Using normal constructor instead of Builder
         User user = new User(
                 request.getUsername(),
+                request.getEmail(),
                 passwordEncoder.encode(request.getPassword()),
                 "ROLE_USER"
         );
 
         userRepository.save(user);
-
         return "User registered successfully!";
     }
 
-    public String login(String username, String password) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Error: Invalid username or password!"));
+    // Login accepts username OR email
+    public String login(String identifier, String password) {
+        User user = userRepository.findByUsernameOrEmail(identifier)
+                .orElseThrow(() -> new RuntimeException("Error: Invalid username/email or password!"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Error: Invalid username or password!");
+            throw new RuntimeException("Error: Invalid username/email or password!");
         }
 
-        return jwtUtils.generateToken(username);
+        return jwtUtils.generateToken(user.getUsername());
     }
 }
