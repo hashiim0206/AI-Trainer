@@ -6,11 +6,11 @@ A **full-stack, AI-powered fitness application** that acts as your personalized 
 
 ## ✨ Features
 
+- **AI Daily Food Log**: Type your meals in plain English (e.g., "3 eggs and avocado toast"), and the AI automatically calculates calories and macros for you.
 - **ChatGPT-Style Chat Sessions**: Organize conversations into separate threads with persistent history. AI automatically generates short, descriptive titles for your chats.
-- **Interactive AI Coach**: Real-time chat interface where the AI knows your profile, latest goal, and session context to provide personalized fitness advice.
 - **Login Streak Tracker**: Gamified dashboard widget that tracks consecutive days logged in to encourage consistency.
 - **Workout Rest Timer**: A global, floating countdown timer with audio/visual notifications to help you time your rest periods between sets.
-- **Macro Calculator**: Standalone scientific calculator (Mifflin-St Jeor) to quickly find your BMR, TDEE, and target macros for weight loss or muscle gain.
+- **Macro Calculator**: Standalone scientific calculator (Mifflin-St Jeor) that auto-syncs with your latest profile and progress data.
 - **Secure Authentication**: Flexible login using either **Username or Email** with JWT-based stateless authentication.
 - **Progress Tracking**: Log weekly weight and macro intake. Visualizes trends using **Recharts** with interactive tooltips.
 - **Dynamic Health Profiling**: Instant calculation of BMI, Body Fat %, and Maintenance Calories.
